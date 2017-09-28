@@ -45,7 +45,7 @@ class Block(object):
         self.timestamp = str(date.datetime.now()).encode('utf8')
 
     def merkle_root(self):
-        self.merkle_root = findMerkleRoot(self.transactions)
+        self.merkleRoot = findMerkleRoot(self.transactions)
 
     def block_version(self, vers):
         # gets the version and updates that instance with the version
