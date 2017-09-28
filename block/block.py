@@ -2,6 +2,7 @@ import hashlib
 import sys
 import json
 import datetime as date
+import merkleTree
 
 # define variables
 version = "00000001"  # version
@@ -44,7 +45,7 @@ class Block(object):
         self.timestamp = str(date.datetime.now()).encode('utf8')
 
     def merkle_root(self):
-        # calculates the merkle root and sets it as the blocks merkle_root
+        self.merkle_root = merkleTree.findMerkleRoot(self.transactions)
 
     def block_version(self, vers):
         # gets the version and updates that instance with the version
@@ -67,8 +68,3 @@ class Block(object):
     @staticmethod
     def get_merkle_root(transactions):
         # calculates the merkle root and returns the merkle_root of transactions
-
-
-
-
-
