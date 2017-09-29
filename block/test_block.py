@@ -2,9 +2,7 @@ from block import Block
 import block
 import sys
 
-# test variables
-print(len(block.version))  # check to see if it is 4 bytes
 
 # test block class
-block1 = Block()
-print(block1.version)
+block1 = Block(previous_hash='0000000000000000000000000000000000000000000000000000000000000000', transactions='test')
+print(block1.info())
