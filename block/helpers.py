@@ -1,5 +1,5 @@
 # A set of helper functions for calculations etc
-
+import hashlib
 
 # this could be wrong lol
 def doubleHash(myString):
