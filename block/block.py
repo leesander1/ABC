@@ -27,6 +27,7 @@ class Block(object):
         # define block header attributes
         self.version = version.encode('utf8')  # 4 bytes
         self.previous_hash = previous_hash.encode('utf8')  # 32 bytes
+        self.transactions = transactions  # NOTE: may need to change
         self.merkle_root = self.merkle_root()  # 32 bytes
         self.timestamp = self.block_timestamp()  # 4 bytes
         self.nonce = None  # 4 bytes
@@ -34,7 +35,6 @@ class Block(object):
 
         # define rest of block
         self.txcount = len(transactions)  # 4 bytes
-        self.transactions = transactions  # NOTE: may need to change
         self.size = self.block_size()  # 4 bytes
 
     def block_size(self):
@@ -52,7 +52,7 @@ class Block(object):
 
     def merkle_root(self):
         # calculates the merkle root and sets it as the blocks merkle_root
-        return 0000000000000000000000000000000000000000000000000000000000000000
+        return findMerkleRoot(self.transactions)
 
     def version(self, vers):
         # set the version

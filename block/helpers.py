@@ -1,13 +1,12 @@
 # A set of helper functions for calculations etc
 import hashlib
 
-# this could be wrong lol
 def doubleHash(myString):
     return hashlib.sha256(hashlib.sha256(myString.encode('utf-8')).hexdigest().encode('utf-8')).hexdigest()
 
-# this could be wrong too lol, but you'd still get a hash tho
 def hashPairs(id1, id2):
 
+    # little and big endian stuff
     x = id1[::-1]
     y = id2[::-1]
 
@@ -26,4 +25,4 @@ def findMerkleRoot(myList):
     if len(myList) % 2 != 0:
         newList.append(hashPairs(myList[-1], myList[-1]))
 
-    return merkle(newList)
+    return findMerkleRoot(newList)
