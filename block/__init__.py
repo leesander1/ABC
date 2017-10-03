@@ -1,2 +1,2 @@
-from block import Block
+from block.block import Block
 import block
