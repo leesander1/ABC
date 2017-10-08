@@ -108,3 +108,4 @@ class CLI(cmd.Cmd, object):
         # we should also save stuff on events
         save_conf(self.conf)
         return
+    
