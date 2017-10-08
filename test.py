@@ -1,7 +1,14 @@
+''' Tests '''
 from block import Block
-from core import core
+import block
+from block.block import genesis_block
+# from client import core
+from client.core import initialize, save_conf
 
-
+conf = initialize()
+print(conf["height"])
+save_conf(conf)
 # test block class
-block1 = Block(previous_hash='0000000000000000000000000000000000000000000000000000000000000000', transactions='test')
-print(block1.info())
+b = genesis_block()
+b.print_info()
+b.print_header()

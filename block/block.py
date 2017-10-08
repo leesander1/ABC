@@ -36,6 +36,7 @@ class Block(object):
         self.transactions = transactions  # NOTE: may need to change
         self.size = self.block_size()  # 4 bytes
 
+
     def block_size(self):
         # calculates the size of the block and returns instance size to value
         header = 80  # header is 80 bytes
@@ -49,9 +50,13 @@ class Block(object):
         # gets the time and sets timestamp
         return str(date.datetime.now()).encode('utf8')
 
+    def genesis_timestamp(self):
+        # gets the time and sets timestamp
+        self.timestamp = str("2017-10-08 13:18:06.810644").encode('utf8')
+
     def merkle_root(self):
         # calculates the merkle root and sets it as the blocks merkle_root
-        return 0000000000000000000000000000000000000000000000000000000000000000
+        return 0
 
     def version(self, vers):
         # set the version
@@ -64,24 +69,31 @@ class Block(object):
     def header(self):
         # returns the header info
         header = {
-            'version': self.version,
-            'parent': self.previous_hash,
+            'version': self.version.decode('utf-8'),
+            'parent': self.previous_hash.decode('utf-8'),
             'merkle_root': self.merkle_root,
-            'timestamp': self.timestamp,
+            'timestamp': self.timestamp.decode('utf-8'),
             'target': self.target,
             'nonce': self.nonce
         }
         return header
 
+    def print_header(self):
+        # pretty prints the header info
+        obj = json.dumps(self.header())
+        parsed = json.loads(obj)
+        print(json.dumps(parsed, indent=4, sort_keys=True))
+        return
+
     def info(self):
         # returns all the data of the block
         info = {
-            'block': hash(self),
+            'block': self.block_hash(self.nonce),
             'header': {
-                'version': self.version,
-                'parent': self.previous_hash,
+                'version': self.version.decode('utf-8'),
+                'parent': self.previous_hash.decode('utf-8'),
                 'merkle_root': self.merkle_root,
-                'timestamp': self.timestamp,
+                'timestamp': self.timestamp.decode('utf-8'),
                 'target': self.target,
                 'nonce': self.nonce
             },
@@ -91,7 +103,14 @@ class Block(object):
         }
         return info
 
-    def hash(self, nonce=None):
+    def print_info(self):
+        # pretty prints the info json
+        obj = json.dumps(self.info())
+        parsed = json.loads(obj)
+        print(json.dumps(parsed, indent=4, sort_keys=True))
+        return
+
+    def block_hash(self, nonce=None):
         # calculates and returns the hash of the block header
         # if nonce changes, update instance
         nonce = nonce or self.nonce
@@ -104,18 +123,18 @@ class Block(object):
         m.update(str(self.timestamp).encode('utf-8'))
         m.update(str(nonce).encode('utf-8'))
         m.update(str(self.target).encode('utf-8'))
-
-        return m.hexdigest()
+        return hashlib.sha256(m.hexdigest().encode('utf-8')).hexdigest()
 
 
     def verify_hash(self, block_hash):
         # verifies the hash is valid by checking if it matches the criteria target difficulty
         # 1) check if hash matches target difficulty
         prefix = ''
-        prefix.zfill(self.target)  # prefix is a string of zeros of the target
+        prefix = prefix.zfill(self.target)  # prefix is a string of zeros of the target
 
         # return a boolean value
         # checks to see if hash starts with the prefix zeros
+        #print(block_hash)
         return block_hash.startswith(prefix)
 
     def mine(self):
@@ -125,7 +144,7 @@ class Block(object):
 
         # loop through, hash the block with the nonce and verify
         while True:
-            hash_try = self.hash(nonce=nonce_try)  # hash the candidate block
+            hash_try = self.block_hash(nonce=nonce_try)  # hash the candidate block
             if self.verify_hash(hash_try):  # check to see if hash is valid
                 # if true, we found the correct hash for the pow
                 self.nonce = nonce_try  # set the nonce
@@ -149,6 +168,13 @@ class Block(object):
     #     # calculates the size of the transactions
 
 
+def genesis_block():
+    'Mines the genesis block. (Always the same block) 0000669a5bd0d672a499608a45c24649584fb0b40c8ef6a5f9e6765caf5ae892'
+    b = Block(previous_hash='0000000000000000000000000000000000000000000000000000000000000000', transactions='test')
+    Block.target(b, 4)
+    Block.genesis_timestamp(b)
+    Block.mine(b)
+    return b
 
 # if __name__ == '__main__':
 #     # do something

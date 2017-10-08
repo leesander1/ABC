@@ -1,0 +1,14 @@
+{
+    "block": "0000669a5bd0d672a499608a45c24649584fb0b40c8ef6a5f9e6765caf5ae892",
+    "header": {
+        "merkle_root": 0,
+        "nonce": 13822,
+        "parent": "0000000000000000000000000000000000000000000000000000000000000000",
+        "target": 4,
+        "timestamp": "2017-10-08 13:18:06.810644",
+        "version": "00000001"
+    },
+    "size": 88,
+    "transactions": "test",
+    "txcount": 4
+}
