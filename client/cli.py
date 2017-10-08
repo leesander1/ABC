@@ -79,9 +79,8 @@ class CLI(cmd.Cmd, object):
         return r
 
     def emptyline(self):
-        ''' define $ as a shortcut for the mine command. x for exit
-            and ask for confirmation when the interpreter exit'''
-        return True
+        ''' '''
+        return False
 
     def preloop(self):
         'Do stuff on start'
@@ -108,4 +107,3 @@ class CLI(cmd.Cmd, object):
         # we should also save stuff on events
         save_conf(self.conf)
         return
-    
