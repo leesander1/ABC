@@ -21,7 +21,7 @@ class CLI(cmd.Cmd, object):
         # note wasn't able to figure out how to stop it...
         block1 = Block(previous_hash=self.conf["last_block"],
                        transactions='test')
-        Block.target(block1, 6)
+        Block.target(block1, self.conf["difficulty"])
         Block.mine(block1)
         print(Block.info(block1))
         return
@@ -41,10 +41,12 @@ class CLI(cmd.Cmd, object):
 
     def do_peers(self, arg):
         'Prints peer info'
-        print(json.dumps(self.wallet, indent=4, sort_keys=True))
+        print(json.dumps(self.peers, indent=4, sort_keys=True))
         return
+
     def do_balance(self, arg):
         'Prints balance'
+        print(json.dumps(self.wallet["amount"], indent=4, sort_keys=True))
         return
 
     def do_info(self, arg):
