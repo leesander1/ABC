@@ -44,9 +44,11 @@ def findMerklePath(tnxList, transactionId, path=[]):
     for i in range(0, len(tnxList) - 1, 2):
         if tnxList[i] == transactionId:
             path.append(tnxList[i+1])
+            transactionId = hashPairs(tnxList[i], tnxList[i+1])
 
         if tnxList[i+1] == transactionId:
             path.append(tnxList[i])
+            transactionId = hashPairs(tnxList[i], tnxList[i+1])
 
         newList.append(hashPairs(tnxList[i], tnxList[i+1]))
 
@@ -66,11 +68,11 @@ def findTransaction(merklePath, merkleRoot, transactionId):
     :return: boolean value on whether the transaction was found
     """
     tnxHash = transactionId
-    if len(merklePath) != 0: # note: this is only true if transaction id are hashed the same with merkle roots
-        for i in range(0, len(tnxList) - 1):
-            tnxHash = hashPairs(tnxHash, transactionId)
+    if len(merklePath) != 0: # NOTE: this is only true if transaction id are hashed the same with merkle roots
+        for i in range(0, len(merklePath)):
+            tnxHash = hashPairs(merklePath[i], tnxHash)
 
     if tnxHash == merkleRoot:
-        return true
+        return True
     else:
-        return false
+        return False
