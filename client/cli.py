@@ -1,6 +1,6 @@
 ''' The cmd line interface '''
 from block.block import Block, genesis_block
-from client.core import initialize, save_conf
+from client.core import initialize, save_conf, read_block
 from client.helpers import parse, cromulon
 import cmd, sys, hashlib, json, signal
 
@@ -23,7 +23,6 @@ class CLI(cmd.Cmd, object):
                        transactions='test')
         Block.target(block1, self.conf["difficulty"])
         Block.mine(block1)
-        print(Block.info(block1))
         return
 
     def do_stop(self, arg):
@@ -56,6 +55,8 @@ class CLI(cmd.Cmd, object):
 
     def do_block_info(self, arg):
         'Prints the info of the block'
+        b = read_block(arg[:])
+        print(json.dumps(b, indent=4, sort_keys=True))
         return
 
     def do_send(self, arg):

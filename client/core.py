@@ -46,6 +46,7 @@ def create_conf():
         'last_block': "0000669a5bd0d672a499608a45c24649584fb0b40c8ef6a5f9e6765caf5ae892",
         'version': "00000001",
         'difficulty': 4,
+        'reward': 100,
         'key': {
             'private': "private_key",
             'public': "public_key",
@@ -99,6 +100,18 @@ def save_block(b):
         print('error saving block')
     return
 
+def increment_height(conf):
+    # updates the height of the chain in the conf
+    conf["height"] += 1
+    updated = save_conf(conf)
+    return updated
+
+def update_previous_hash(conf, block_hash):
+    # updates the height of the chain in the conf
+    conf["last_block"] = block_hash
+    updated = save_conf(conf)
+    return updated
+
 def read_block(block_hash):
     # loads the block
     try:
@@ -110,3 +123,12 @@ def read_block(block_hash):
     except IOError as e:
         # file does not exist or not able to read file
         print('{0}'.format(e))
+
+def mine():
+    # Mines blocks
+    # 1) add coinbase tx with reward
+    # 2) bundle transactions
+    # 3) if success, save block, update db, update config with updated previous_hash & height
+    # 4) notify network
+    # 5) repeat
+    return
