@@ -1,5 +1,9 @@
 from block import Block
-from core import CLI
+from client import block_chain
+import json
 
+block_chain.append(Block.create_genesis())
 
-CLI().cmdloop()
+tnx = json.loads(block_chain[0].get_transactions())
+
+print(tnx['inputs'])
