@@ -15,6 +15,9 @@ def findMerkleRoot(tnxList):
     :param tnxList: the list of transactions
     :return: merkle root (a hash)
     """
+    if len(tnxList) == 0:
+        return
+
     if len(tnxList) == 1:
         return tnxList[0]
 
@@ -37,8 +40,7 @@ def findMerklePath(tnxList, transactionId, path=[]):
     :param path: set to empty list by default, only to be used during recursion
     :return: a list of hashes
     """
-
-    if len(tnxList) == 1:
+    if len(tnxList) == 1 or len(tnxList) == 0:
         return path
 
     tnxList.sort() # sort transaction list so that the lesser of the pairs will be concat first
