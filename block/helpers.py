@@ -18,6 +18,7 @@ def findMerkleRoot(tnxList):
     if len(tnxList) == 1:
         return tnxList[0]
 
+    tnxList.sort() # sort transaction list so that the lesser of the pairs will be concat first
     newList = []
     for i in range(0, len(tnxList) - 1, 2):
         newList.append(hashPairs(tnxList[i], tnxList[i+1]))
@@ -40,6 +41,7 @@ def findMerklePath(tnxList, transactionId, path=[]):
     if len(tnxList) == 1:
         return path
 
+    tnxList.sort() # sort transaction list so that the lesser of the pairs will be concat first
     newList = []
     for i in range(0, len(tnxList) - 1, 2):
         if tnxList[i] == transactionId:
@@ -53,7 +55,9 @@ def findMerklePath(tnxList, transactionId, path=[]):
         newList.append(hashPairs(tnxList[i], tnxList[i+1]))
 
     if len(tnxList) % 2 != 0:
-        path.append(tnxList[-1])
+        if transactionId == tnxList[-1]:
+            path.append(tnxList[-1])
+            transactionId = hashPairs(tnxList[-1], tnxList[-1])
         newList.append(hashPairs(tnxList[-1], tnxList[-1]))
 
     return findMerklePath(newList, transactionId, path)
@@ -67,10 +71,16 @@ def findTransaction(merklePath, merkleRoot, transactionId):
     :param transactionId: the transaction id of trhe transactions being verified
     :return: boolean value on whether the transaction was found
     """
+
+
     tnxHash = transactionId
     if len(merklePath) != 0: # NOTE: this is only true if transaction id are hashed the same with merkle roots
         for i in range(0, len(merklePath)):
-            tnxHash = hashPairs(merklePath[i], tnxHash)
+            # since merkleRoot hashes smallest to largest, we respect that order here
+            if merklePath[i] < tnxHash:
+                tnxHash = hashPairs(merklePath[i], tnxHash)
+            else:
+                tnxHash = hashPairs(tnxHash, merklePath[i])
 
     if tnxHash == merkleRoot:
         return True

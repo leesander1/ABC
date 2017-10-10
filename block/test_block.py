@@ -8,13 +8,8 @@ import helpers
 #print(block1.info())
 
 # test the merkle path. Will not be implemented into block class yet
-tnx = ['test1', 'test2', 'test3', 'test4']
+tnx = ['test1', 'test2', 'test3', 'test4', 'test5']
 merkleRoot = helpers.findMerkleRoot(tnx)
-merklePath = helpers.findMerklePath(tnx, 'test2')
-varify = helpers.findTransaction(merklePath, merkleRoot, 'test2')
+merklePath = helpers.findMerklePath(tnx, 'test3')
+varify = helpers.findTransaction(merklePath, merkleRoot, 'test3')
 print(varify)
-
-x = helpers.hashPairs('test1', 'test2')
-y = helpers.hashPairs('test3', 'test4')
-z = helpers.hashPairs(y, x)
-print(z)
