@@ -4,22 +4,20 @@ import json
 
 
 class Block(object):
-    def __init__(self, index, data, previous_hash):
+    def __init__(self, **kwargs):
         """
         Create a block object
         :param index: the block height (previous block index + 1)
         :param data: a json serializable python dictionary of transactions
-                    contained in this block. Transactions are labelled
-                    by integer keys from 0 to n. Each transaction is a json
-                    serializable python dictionary containing the fields
-                    'inputs', and 'outputs'
+                    contained in this block. 
         :param previous_hash: the previous blocks hash
         """
-        self.index = index  # block height
-        self.timestamp = date.datetime.now()  # time created
-        self.data = data  # transactions as nested python dictionary
-        self.previous_hash = previous_hash  # previous block hash
-        self.hash = self.hash_block()  # compute this block hash
+        self.index = kwargs.pop('index')  # block height required
+        self.previous_hash = kwargs.pop('previous_hash')  # previous block hash required3
+
+        self.timestamp = kwargs.pop('timestamp', None)  # TODO: comput when POW is solved
+        self.data = kwargs.pop('data', None)  # transactions as nested python dictionary
+        self.hash = kwargs.pop('hash', None)  # TODO: compute when POW is solved
 
     def hash_block(self):
         sha = hasher.sha256()
@@ -39,6 +37,7 @@ class Block(object):
         """
         return self.data
 
+
     def get_next_block(self, data):
         """
         Create a new block based off this one.
@@ -47,32 +46,11 @@ class Block(object):
         :return: the newly created block
         """
         new_idx = self.index + 1
-        new_data = data  # TODO: needs data
+        new_data = data
         new_prev_hash = self.hash
-        return Block(new_idx, new_data, new_prev_hash)
+        return Block(index=new_idx, data=new_data, previous_hash=new_prev_hash)
 
-    @staticmethod
-    def create_genesis():
-        """
-        Create a genesis block (the first block in the block chain)
-        :return: 
-        """
-        data = {
-            0: {
-                "inputs": [
-                    ("null", "genesis", 7000),
-                    ("null", "genesis", 7000),
-                    ("null", "genesis", 7000),
 
-                ],
-                "outputs": [
-                    ("genesis", "kevin", 7000),
-                    ("genesis", "dane", 7000),
-                    ("genesis", "lee", 7000),
-                ]
-            }
-        }
-        return Block(0, data, "0")
 
     def __str__(self):
         return json.dumps({

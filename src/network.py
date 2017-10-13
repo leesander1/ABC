@@ -1,21 +1,23 @@
-from client import my_transactions
+from src.transaction import Transaction
 from flask import Flask
 from flask import request
-
-from src.transaction import Transaction
-
 node = Flask(__name__)
 
-@node.route('/create_tnx', methods=['POST'])
-def create_transaction():
+
+@node.route('/transaction', methods=['POST'])
+def send_transaction():
     if request.method == 'POST':
         data = request.get_json()
         tnx = Transaction(data)
-        if tnx.verify:
-            my_transactions.append(tnx)
-            return "Transaction submission successful.\n"
-        else:
-            return "Invalid transaction.\n"
+        # if tnx.verify:
+        #     # TODO: add transaction to a lit of tnxs not yet in a block
+        #     return "Transaction submission successful.\n"
+        # else:
+        #     return "Invalid transaction.\n"
 
 
-node.run()
+def run():
+    """
+    Start the flask application
+    """
+    node.run()
