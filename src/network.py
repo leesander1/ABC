@@ -1,7 +1,9 @@
 from client import my_transactions
-from transaction import Transaction
 from flask import Flask
 from flask import request
+
+from src.transaction import Transaction
+
 node = Flask(__name__)
 
 @node.route('/create_tnx', methods=['POST'])
