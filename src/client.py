@@ -9,7 +9,7 @@ PUBLIC_KEY = None
 PRIVATE_KEY = None
 MY_ADDRESS = None
 PRIVATE_KEY_PATH = os.path.normpath('..\\data\\private_key.pem')
-PUBLIC_KEY_PATH = os.path.normpath('..\\data\\public_key.sh')
+PUBLIC_KEY_PATH = os.path.normpath('..\\data\\public_key.txt')
 MY_ADDRESS_PATH = os.path.normpath('..\\data\\my_address.txt')
 BLOCK_CHAIN_FILE_PATH = os.path.normpath('..\\data\\block_chain.txt')
 UNSPENT_TRANSACTIONS_PATH = os.path.normpath('..\\data\\unspent_transactions.txt')
@@ -19,17 +19,15 @@ def get_keys():
     Generate a set of Elliptic Curve Cryptograph keys and
     store them in respective files
     """
-
-
     try:  # try to load previously stored key pair
 
-        public_key = (open(PRIVATE_KEY_PATH).read())
-        private_key = ECC.import_key(open(PUBLIC_KEY_PATH).read())
+        public_key = open(PRIVATE_KEY_PATH).read()  # import as plaintext
+        private_key = ECC.import_key(open(PUBLIC_KEY_PATH).read())  # ECC object
 
     except FileNotFoundError:  # generate new key pair
 
-        private_key = ECC.generate(curve='P-256')
-        public_key = private_key.public_key().export_key(format='OpenSSH')
+        private_key = ECC.generate(curve='P-256')  # ECC object
+        public_key = private_key.public_key().export_key(format='OpenSSH') #plain text
 
         # write private key to file
         # TODO: this file path is static.. if the working directory isnt src/ it wont work
@@ -58,12 +56,11 @@ def get_address():
     try:
         file = open(MY_ADDRESS_PATH, 'r')
         address = file.read()
-        file.close()
-    except FileNotFoundError:
+    except FileNotFoundError:  # create address file with address
         file = open(MY_ADDRESS_PATH, 'wt')
         address = 'dane'
         file.write(address)
-        file.close()
+    file.close()
 
     global MY_ADDRESS
     MY_ADDRESS = address
@@ -71,10 +68,12 @@ def get_address():
 
 def write_block(block):
     """
-    Append a new block to the end of the block chain
+    Append a new block to the end of the block chain by writing it to 
+    end of block chain file
     :param block: the block object to append
     """
-    # TODO: this file path is static.. if the working directory isnt src/ it wont work
+    # NOTE: this file path is static.
+    # If the working directory isn't src/ it wont work
     file = open(BLOCK_CHAIN_FILE_PATH, 'a')
     file.write("{}\n".format(block))
     file.close()
@@ -87,10 +86,11 @@ def read_block_chain(index=None):
     :param index: height of block to read
     :return: the block at height `index`
     """
-    # TODO: this file path is static.. if the working directory isnt src/ it wont work
-    file = open(BLOCK_CHAIN_FILE_PATH, 'r')
     # TODO: This has to read the entire file in to a list object..
     # TODO: maybe there is a better way
+    # NOTE: this file path is static.
+    # If the working directory isn't src/ it wont work
+    file = open(BLOCK_CHAIN_FILE_PATH, 'r')
     if index:
         blocks = [Block(**json.loads(x)) for x in file.readlines()[index]]
     else:
@@ -108,7 +108,7 @@ def write_my_transactions(block):
     file = open(UNSPENT_TRANSACTIONS_PATH, 'a')
 
     for i, transaction in block.get_transactions().items() :
-        tnx = Transaction(**transaction)  # convert to Transaction object
+        tnx = Transaction(payload=transaction)  # convert to Transaction object
         for output in tnx.get_outputs():
             if output[1] == MY_ADDRESS:  # receiver is position 1 of output
                 file.write("{}\n".format(tnx))
@@ -135,7 +135,7 @@ def read_my_transactions():
     """
     try:
         file = open(UNSPENT_TRANSACTIONS_PATH, 'r')
-        transactions = [Transaction(**json.loads(x)) for x in file.readlines()]
+        transactions = [Transaction(payload=json.loads(x)) for x in file.readlines()]
         file.close()
     except FileNotFoundError:  # no transactions file found
         transactions = []
@@ -171,11 +171,10 @@ def create_transaction(rec_address, amount):
     total -= amount
     if total != 0:
         outputs.append((MY_ADDRESS, MY_ADDRESS, total))
-
     # build the transaction object
-    transaction = Transaction(sender_pubkey=PUBLIC_KEY)
-    transaction.set_message(inputs, outputs)
-    transaction.generate_id()
+    transaction = Transaction(sender_pubkey=PUBLIC_KEY,
+                              inputs=inputs,
+                              outputs=outputs,)
     transaction.sign(PRIVATE_KEY)
     return transaction
 

@@ -19,12 +19,12 @@ client.get_address()
 from src.block import Block
 from src.transaction import Transaction
 
-g_block = client.create_genesis()
-client.write_block(g_block)
-client.write_my_transactions(g_block)
+g_block = client.create_genesis() # create genesis block
+client.write_block(g_block)  # write it to block chain file
+client.write_my_transactions(g_block)  # write all of this nodes received tnxs
 
-sent = client.send_transaction('poop', 7000)
-print(sent.verify())
+sent = client.send_transaction('test', 7000)  # create/sign/send transaction
+print(sent.verify())  # verify a sent transaction
 
 
 
