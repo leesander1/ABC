@@ -1,50 +1,19 @@
 from Crypto.PublicKey import ECC
 from src.block import Block
 from src.transaction import Transaction
+from src.keybase import AbcKey
 import src.network
 import json
 import os
 
-PUBLIC_KEY = None
-PRIVATE_KEY = None
+
 MY_ADDRESS = None
-PRIVATE_KEY_PATH = os.path.normpath('..\\data\\private_key.pem')
-PUBLIC_KEY_PATH = os.path.normpath('..\\data\\public_key.txt')
-MY_ADDRESS_PATH = os.path.normpath('..\\data\\my_address.txt')
-BLOCK_CHAIN_FILE_PATH = os.path.normpath('..\\data\\block_chain.txt')
-UNSPENT_TRANSACTIONS_PATH = os.path.normpath('..\\data\\unspent_transactions.txt')
 
-def get_keys():
-    """
-    Generate a set of Elliptic Curve Cryptograph keys and
-    store them in respective files
-    """
-    try:  # try to load previously stored key pair
+MY_ADDRESS_PATH = os.path.normpath('../data/my_address.txt')
+BLOCK_CHAIN_FILE_PATH = os.path.normpath('../data/block_chain.txt')
+UNSPENT_TRANSACTIONS_PATH = os.path.normpath('../data/unspent_transactions.txt')
 
-        public_key = open(PRIVATE_KEY_PATH).read()  # import as plaintext
-        private_key = ECC.import_key(open(PUBLIC_KEY_PATH).read())  # ECC object
-
-    except FileNotFoundError:  # generate new key pair
-
-        private_key = ECC.generate(curve='P-256')  # ECC object
-        public_key = private_key.public_key().export_key(format='OpenSSH') #plain text
-
-        # write private key to file
-        # TODO: this file path is static.. if the working directory isnt src/ it wont work
-        file = open(PRIVATE_KEY_PATH, 'wt')
-        file.write(private_key.export_key(format='PEM'))
-        file.close()
-
-        # write public key to file
-        # TODO: this file path is static.. if the working directory isnt src/ it wont work
-        file = open(PUBLIC_KEY_PATH, 'wt')
-        file.write(public_key)
-        file.close()
-
-    global PUBLIC_KEY  # assign the public key globally
-    PUBLIC_KEY = public_key
-    global PRIVATE_KEY  # assign the private key globally
-    PRIVATE_KEY = private_key
+keys = AbcKey()
 
 
 def get_address():
@@ -74,6 +43,7 @@ def write_block(block):
     """
     # NOTE: this file path is static.
     # If the working directory isn't src/ it wont work
+    # TODO: check index, previous hash before writing
     file = open(BLOCK_CHAIN_FILE_PATH, 'a')
     file.write("{}\n".format(block))
     file.close()
@@ -81,10 +51,10 @@ def write_block(block):
 
 def read_block_chain(index=None):
     """
-    Read a block from a specified block height off of the block chain.
-    If no height is specified, the last block is read.
+    Read block at index `index`. If no index is specified, the entire
+    block chain is read.
     :param index: height of block to read
-    :return: the block at height `index`
+    :return: a list of Block object(s)
     """
     # TODO: This has to read the entire file in to a list object..
     # TODO: maybe there is a better way
@@ -106,7 +76,6 @@ def write_my_transactions(block):
     :param block: a Block object
     """
     file = open(UNSPENT_TRANSACTIONS_PATH, 'a')
-
     for i, transaction in block.get_transactions().items() :
         tnx = Transaction(payload=transaction)  # convert to Transaction object
         for output in tnx.get_outputs():
@@ -118,10 +87,11 @@ def write_my_transactions(block):
 
 def overwrite_my_transactions(transactions):
     """
-    Overwrite all contents in the my unspent transactions file
-    :param transactions: 
-    :return: 
+    Overwrite all contents in the unspent transactions file
+    :param transactions: the new list of unspent transactions
     """
+    # TODO: this overwrites the entire file instead
+    # TODO of just taking out the ones we used up. Maybe there is a better way
     file = open(UNSPENT_TRANSACTIONS_PATH, 'wt')
     for tnx in transactions:
         file.write("{}\n".format(tnx))
@@ -130,7 +100,7 @@ def overwrite_my_transactions(transactions):
 
 def read_my_transactions():
     """
-    Read in all saved transactions addressed to this node
+    Read in all saved unspent transactions addressed to this node
     :return: a list of transactions
     """
     try:
@@ -148,12 +118,12 @@ def create_transaction(rec_address, amount):
     format them into a Transaction object and then sign the transaction.
     :param rec_address: the address of the receiver
     :param amount: the amount to the receivers address
-    :return: a complete filled out Transacttion object
+    :return: a complete filled out Transaction object
     """
     inputs = []
     outputs = []
     total = 0
-
+    transaction = None
     # get inputs
     unspent_transactions = read_my_transactions()
     for tnx in unspent_transactions:
@@ -163,20 +133,24 @@ def create_transaction(rec_address, amount):
                 unspent_transactions.remove(tnx)
                 total += output[2]  # add outputs value to total
 
-    # update unspent transactions
-    overwrite_my_transactions(unspent_transactions)
+    if total < amount:
+        print("Insufficient Funds for {} abc transaction".format(amount))
+    else:
+        # update unspent transactions
+        overwrite_my_transactions(unspent_transactions)
 
-    # create outputs
-    outputs.append((rec_address, MY_ADDRESS, amount))
-    total -= amount
-    if total != 0:
-        outputs.append((MY_ADDRESS, MY_ADDRESS, total))
-    # build the transaction object
-    transaction = Transaction(sender_pubkey=PUBLIC_KEY,
-                              inputs=inputs,
-                              outputs=outputs,)
-    transaction.sign(PRIVATE_KEY)
+        # create outputs
+        outputs.append((rec_address, MY_ADDRESS, amount))
+        total -= amount
+        if total != 0:
+            outputs.append((MY_ADDRESS, MY_ADDRESS, total))
+        # build the transaction object
+        transaction = Transaction(sender_pubkey=keys.get_public(),
+                                  inputs=inputs,
+                                  outputs=outputs,)
+        transaction.sign(keys.get_private())
     return transaction
+
 
 def send_transaction(rec_address, amount):
     """
@@ -185,13 +159,15 @@ def send_transaction(rec_address, amount):
     :param amount: the amount to the receivers address
     """
     tnx = create_transaction(rec_address, amount)
+    # TODO: actually send over network
     print("Sending Transaction: {}".format(tnx))
     return tnx
+
 
 def create_genesis():
     """
     Create a genesis block (the first block in the block chain)
-    :return: 
+    :return: a new Block object
     """
     data = {  # one transaction
         0:  {

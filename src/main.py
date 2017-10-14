@@ -1,10 +1,6 @@
 from src import client
 from src import network
 
-
-# Load a key pair from data/. If none exist, create a key pair.
-client.get_keys()
-
 # Load my address from data/. If none exist, write one.
 client.get_address()
 
@@ -23,7 +19,8 @@ g_block = client.create_genesis() # create genesis block
 client.write_block(g_block)  # write it to block chain file
 client.write_my_transactions(g_block)  # write all of this nodes received tnxs
 
-sent = client.send_transaction('test', 7000)  # create/sign/send transaction
+sent = client.send_transaction('test', 3500)  # create/sign/send transaction
+
 print(sent.verify())  # verify a sent transaction
 
 

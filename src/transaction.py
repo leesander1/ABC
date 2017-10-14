@@ -1,9 +1,7 @@
 from Crypto.Hash import SHA256
 from Crypto.Signature import DSS
-from Crypto.PublicKey import ECC
+from src.keybase import import_key
 import json
-import os
-
 
 class Transaction(object):
     def __init__(self, **kwargs):
@@ -36,12 +34,12 @@ class Transaction(object):
             self.signature = self.payload['signature']
         else:  # building transaction
             self.signature = None
-            self.sender_pubkey = kwargs.pop('sender_pubkey')
+            self.sender_pubkey = kwargs.pop('sender_pubkey')  # ECC Key object
             self.message = {"inputs": kwargs.pop('inputs'),
                             "outputs": kwargs.pop('outputs')}
             self.id = SHA256.new(  # hash message + sender public key
                 (str(self.message) +
-                 self.sender_pubkey)
+                 str(self.sender_pubkey))
                     .encode('utf-8')).hexdigest()  # string format
 
     def get_outputs(self):
@@ -86,7 +84,7 @@ class Transaction(object):
                  if it is)
         """
         hashed_message = SHA256.new(str(self.message).encode('utf-8'))
-        ecc_key = ECC.import_key(self.sender_pubkey)
+        ecc_key = import_key(self.sender_pubkey)
         verifier = DSS.new(ecc_key, 'fips-186-3')
         try:
             verifier.verify(hashed_message, self.signature)
@@ -98,7 +96,7 @@ class Transaction(object):
     def __str__(self):
         return json.dumps({
             "id": self.id,
-            "sender_pubkey": self.sender_pubkey,
+            "sender_pubkey": str(self.sender_pubkey),
             "signature": str(self.signature),
             "message": self.message
         })
