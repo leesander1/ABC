@@ -1,9 +1,6 @@
 from src import client
 from src import network
 
-# Load my address from data/. If none exist, write one.
-client.get_address()
-
 # TODO: if first time opening call network for block chain file
 # TODO: otherwise call network for updates
 # TODO: if this is the first node on the network and the blockchain has not been created, create the genesis
