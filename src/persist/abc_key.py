@@ -8,11 +8,18 @@ _PRIVATE_KEY = None
 _PUBLIC_KEY = None
 
 
+def ensure_data_dir():
+    data_dir = os.path.normpath('../data/')
+    if not os.path.isdir(data_dir):
+        os.mkdir(data_dir)
+
+
 def get_private_key():
     """
     Set the private key from a file or by creating a new one
     :return: ECC private key object
     """
+    ensure_data_dir()
     if _PRIVATE_KEY:
         key = _PRIVATE_KEY
     else:
@@ -34,6 +41,7 @@ def get_public_key(output=None):
     :param output: can equal 'string' if the public key needs to be a string
     :return: string or ECC object representing the public key
     """
+    ensure_data_dir()
     if _PUBLIC_KEY:
         key = _PUBLIC_KEY
     else:
