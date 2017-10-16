@@ -1,24 +1,39 @@
 from src import client
-from src import network
-
-# TODO: if first time opening call network for block chain file
-# TODO: otherwise call network for updates
-# TODO: if this is the first node on the network and the blockchain has not been created, create the genesis
-
-# Wait for command via interface from user
-
-
-# Testing purposes below this line #######################################
+from src.persist import block_chain
 from src.block import Block
-from src.transaction import Transaction
+# TODO: Check the status of the network, respond accordingly
+# TODO: wait for command from user
 
-g_block = client.create_genesis() # create genesis block
-client.write_block(g_block)  # write it to block chain file
-client.write_my_transactions(g_block)  # write all of this nodes received tnxs
+#####################################################################
+#
+#
+#       TESTING BELOW
+#
+#
+#####################################################################
 
-sent = client.send_transaction('test', 3500)  # create/sign/send transaction
+# Create genesis
+g_block = client.create_genesis()
+block_chain.write_block(g_block)
 
-print(sent.verify())  # verify a sent transaction
+# Make a new block
+new_tnx = client.create_transaction("testdummy1", 400)  # dummy tnx
+new_tnx1 = client.create_transaction("testdummy2", 500)  # dummy tnx
+
+data = {  # block data (dict of transactions included in block)
+    0: new_tnx.get_data(),
+    1: new_tnx.get_data()
+}
+new_block = g_block.get_next_block(data)
+block_chain.write_block(new_block)
+
+# Try to put an invalid block in the block chain
+invalid_block = Block(index=3, data="bad transactions", previous_hash="fakehashy")
+block_chain.write_block(invalid_block)
+
+# Send a new transaction
+sent_tnx = client.send_transaction('test', 3500)  # create/sign/send transaction
+print("Valid Transaction? >>> {}".format(sent_tnx.verify()))  # verify a sent transaction
 
 
 

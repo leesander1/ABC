@@ -1,7 +1,8 @@
 from Crypto.Hash import SHA256
 from Crypto.Signature import DSS
-from src.keybase import import_key
-import json
+
+from persist.abc_key import import_public_key
+
 
 class Transaction(object):
     def __init__(self, **kwargs):
@@ -17,7 +18,7 @@ class Transaction(object):
         
             OR
         
-            :sender_pubkey: this node's public key 
+            :sender_pubkey: this node's public key as a string 
             :inputs: a list of tuples representing all inputs
                      for this transaction. Only used when creating a new
                      transaction.
@@ -28,13 +29,13 @@ class Transaction(object):
 
         self.payload = kwargs.pop('payload', None)
         if self.payload:  # un-packing transaction from network or file
-            self.sender_pubkey = self.payload['sender_pubkey']
+            self.sender_pubkey = self.payload['sender_pubkey']  # String
             self.message = self.payload['message']
             self.id = self.payload['id']
             self.signature = self.payload['signature']
         else:  # building transaction
             self.signature = None
-            self.sender_pubkey = kwargs.pop('sender_pubkey')  # ECC Key object
+            self.sender_pubkey = kwargs.pop('sender_pubkey')  # String
             self.message = {"inputs": kwargs.pop('inputs'),
                             "outputs": kwargs.pop('outputs')}
             self.id = SHA256.new(  # hash message + sender public key
@@ -84,7 +85,7 @@ class Transaction(object):
                  if it is)
         """
         hashed_message = SHA256.new(str(self.message).encode('utf-8'))
-        ecc_key = import_key(self.sender_pubkey)
+        ecc_key = import_public_key(self.sender_pubkey)  # get ECC key object
         verifier = DSS.new(ecc_key, 'fips-186-3')
         try:
             verifier.verify(hashed_message, self.signature)
@@ -93,10 +94,14 @@ class Transaction(object):
             authentic = False
         return authentic
 
-    def __str__(self):
-        return json.dumps({
+    def get_data(self):
+        """
+        Get a dict representation of the Transaction object
+        :return: a dict of the Transaction object
+        """
+        return {
             "id": self.id,
             "sender_pubkey": str(self.sender_pubkey),
             "signature": str(self.signature),
             "message": self.message
-        })
+        }

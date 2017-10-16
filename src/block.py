@@ -45,6 +45,7 @@ class Block(object):
             self.data = kwargs.pop('data')
             self.timestamp = None  # set timestamp when POW solved
             self.hash = None  # hash_block() when POW is solved
+            self.mine_block()
 
     def hash_block(self):
         """
@@ -55,8 +56,18 @@ class Block(object):
                   str(self.timestamp) + \
                   str(self.data) + \
                   str(self.previous_hash)
-        hash = SHA256.new(payload.encode('utf-8'))
-        return hash.hexdigest()
+        block_hash = SHA256.new(payload.encode('utf-8'))
+        return block_hash.hexdigest()
+
+    def mine_block(self):
+        """
+        Mine the block (POW)
+        """
+        # TODO: implement POW algorithm
+
+        # set final properties after mined
+        self.timestamp = date.datetime.now()
+        self.hash = self.hash_block()
 
     def get_transactions(self):
         """
@@ -65,6 +76,20 @@ class Block(object):
                  block
         """
         return self.data
+
+    def get_hash(self):
+        """
+        Get the hash of this block
+        :return: the hash as a string
+        """
+        return self.hash
+
+    def get_previous_hash(self):
+        """
+        Get the previous hash of this block
+        :return: the previous hash as a string
+        """
+        return self.previous_hash
 
     def get_next_block(self, data):
         """
@@ -78,11 +103,15 @@ class Block(object):
         new_prev_hash = self.hash
         return Block(index=new_idx, data=new_data, previous_hash=new_prev_hash)
 
-    def __str__(self):
-        return json.dumps({
+    def get_data(self):
+        """
+        get a dict representation of the entire Block object
+        :return: dict of Block object
+        """
+        return {
             "index": self.index,
             "timestamp": str(self.timestamp),
-            "data": self.data,
+            "data": self.data,  # should be a transaction as a dict
             "hash": self.hash,
             "previous_hash": self.previous_hash
-        })
+        }

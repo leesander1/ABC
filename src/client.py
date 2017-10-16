@@ -1,7 +1,6 @@
+import persist.abc_key as keys
 from src.block import Block
 from src.transaction import Transaction
-import src.keybase as keys
-import src.persistence as persist
 
 
 def create_transaction(rec_address, amount):
@@ -14,34 +13,17 @@ def create_transaction(rec_address, amount):
     """
     inputs = []
     outputs = []
-    total = 0
-    transaction = None
-    my_address = persist.get_address()
-    # get inputs
-    unspent_transactions = persist.read_my_transactions()
-    for tnx in unspent_transactions:
-        for output in tnx.get_outputs():  # for each output
-            if total < amount and output[1] == my_address:
-                inputs.append(output)  # add this output as an input
-                unspent_transactions.remove(tnx)
-                total += output[2]  # add outputs value to total
 
-    if total < amount:  # check to see if inputs are enough
-        print("Insufficient Funds for {} abc transaction".format(amount))
-    else:
-        # update unspent transactions
-        persist.overwrite_my_transactions(unspent_transactions)
+    # TODO: find inputs to this node
+    # TODO: formulate outputs using inputs & amount
+    # TODO: remove inputs from this node (avoid double spending)
+    transaction = Transaction(sender_pubkey=keys.get_public_key(
+        output='string'),
+                              inputs=inputs,
+                              outputs=outputs)
 
-        # create outputs
-        outputs.append((rec_address, my_address, amount))
-        total -= amount
-        if total != 0:
-            outputs.append((my_address, my_address, total))
-        # build the transaction object
-        transaction = Transaction(sender_pubkey=keys.get_public(),
-                                  inputs=inputs,
-                                  outputs=outputs,)
-        transaction.sign(keys.get_private())
+    transaction.sign(keys.get_private_key())
+
     return transaction
 
 
@@ -51,10 +33,10 @@ def send_transaction(rec_address, amount):
     :param rec_address: the address of the receiver
     :param amount: the amount to the receivers address
     """
-    tnx = create_transaction(rec_address, amount)
+    transaction = create_transaction(rec_address, amount)
     # TODO: actually send over network
-    print("Sending Transaction: {}".format(tnx))
-    return tnx
+    print("Sending Transaction: {}".format(transaction.get_data()))
+    return transaction
 
 
 def create_genesis():
@@ -62,24 +44,19 @@ def create_genesis():
     Create a genesis block (the first block in the block chain)
     :return: a new Block object
     """
-    data = {  # one transaction
-        0:  {
-                "id": "",  # TODO: hash of message
-                "signature": "need_signature",  # TODO: one time key pair for genesis tnx
-                "sender_pubkey": "need_public",  # TODO: one time key pair for genesis
-                "message": {
-                    "inputs": [
-                        ("null", "genesis", 7000),
-                        ("null", "genesis", 7000),
-                        ("null", "genesis", 7000),
+    inputs = [
+        ("null", "genesis", 100000),
+    ]
+    outputs = [
+        ("genesis", "kevin", 7000),
+        ("genesis", "dane", 7000),
+        ("genesis", "dane", 5000),
+        ("genesis", "dane", 6500),
+        ("genesis", "lee", 7000),
+    ]
+    tnx0 = Transaction(sender_pubkey="genesis",
+                       inputs=inputs,
+                       outputs=outputs)
 
-                    ],
-                    "outputs": [
-                        ("genesis", "kevin", 7000),
-                        ("genesis", "dane", 7000),
-                        ("genesis", "lee", 7000),
-                    ]
-                }
-            }
-    }
+    data = {0: tnx0.get_data()}
     return Block(index=0, data=data, previous_hash="0")
