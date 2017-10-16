@@ -55,6 +55,7 @@ class CLI(cmd.Cmd, object):
 
     def do_block_info(self, arg):
         'Prints the info of the block'
+        # Note: need to parse and check for valid input
         b = read_block(arg[:])
         print(json.dumps(b, indent=4, sort_keys=True))
         return
@@ -65,7 +66,6 @@ class CLI(cmd.Cmd, object):
 
     def do_showmewhatyougot(self, arg):
         'Show me what you got!'
-
         print(cromulon())
         return
 
