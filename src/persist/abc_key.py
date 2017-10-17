@@ -1,7 +1,7 @@
 from Crypto.PublicKey import ECC
 import os
 
-
+# private constant file paths
 _PRIVATE_KEY_PATH = os.path.normpath('../data/private_key.pem')
 _PUBLIC_KEY_PATH = os.path.normpath('../data/public_key.pem')
 _PRIVATE_KEY = None
@@ -9,9 +9,13 @@ _PUBLIC_KEY = None
 
 
 def ensure_data_dir():
+    """
+    Check to see if the data directory exists.
+    If not, create it
+    """
     data_dir = os.path.normpath('../data/')
-    if not os.path.isdir(data_dir):
-        os.mkdir(data_dir)
+    if not os.path.isdir(data_dir):  # check for existence
+        os.mkdir(data_dir)  # create
 
 
 def get_private_key():
