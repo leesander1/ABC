@@ -35,5 +35,19 @@ block_chain.write_block(invalid_block)
 sent_tnx = client.send_transaction('test', 3500)  # create/sign/send transaction
 print("Valid Transaction? >>> {}".format(sent_tnx.verify()))  # verify a sent transaction
 
+# Simulate man-in-the-middle attack.
+my_sent_tnx = client.send_transaction('tosomeone', 100)
+
+# man in the middle tries to modify the tnx
+data = my_sent_tnx.get_data()
+message = data['message']
+message['outputs'] = ['myAddress','evilme', 100]  # modify to go to evilme
+print("Transaction after attack: {}".format(my_sent_tnx.get_data()))
+
+# receiving node verifies the corrupt tnx
+print("Valid Transaction? >>> {}".format(my_sent_tnx.verify()))
+
+
+
 
 

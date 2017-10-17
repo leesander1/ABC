@@ -12,7 +12,7 @@ def create_transaction(rec_address, amount):
     :return: a complete filled out Transaction object
     """
     inputs = []
-    outputs = []
+    outputs = ['myAddress', rec_address, amount]
 
     # TODO: find inputs to this node
     # TODO: formulate outputs using inputs & amount

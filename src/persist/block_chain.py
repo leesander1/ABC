@@ -15,7 +15,7 @@ def write_block(block):
     """
     Write a new Block object to the block chain file in JSON format
     :param block: the Block object
-    :return: JSON representation of the block
+    :return: True if successful write, false otherwise
     """
     ensure_data_dir()
     success = False
@@ -35,10 +35,7 @@ def write_block(block):
                 file.close()
                 success = True
 
-    if success:
-        print("Block write successful.")
-    else:
-        print("Invalid block: {}".format(block.get_data()))
+    return success
 
 
 def read_all_blocks():
