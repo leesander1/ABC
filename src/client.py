@@ -44,14 +44,12 @@ def create_genesis():
     Create a genesis block (the first block in the block chain)
     :return: a new Block object
     """
-    inputs = [
-        ("null", "genesis", 100000),
+    inputs = [  # inputs (from, to, amount)
+        ("null", "genesis", 21000),
     ]
-    outputs = [
+    outputs = [  # outputs (from, to, amount)
         ("genesis", "kevin", 7000),
         ("genesis", "dane", 7000),
-        ("genesis", "dane", 5000),
-        ("genesis", "dane", 6500),
         ("genesis", "lee", 7000),
     ]
     tnx0 = Transaction(sender_pubkey="genesis",
