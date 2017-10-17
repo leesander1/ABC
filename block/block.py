@@ -2,6 +2,7 @@ import hashlib
 import sys
 import json
 import datetime as date
+from helpers import findMerkleRoot
 
 # define variables
 version = "00000001"  # version
@@ -26,14 +27,14 @@ class Block(object):
         # define block header attributes
         self.version = version.encode('utf8')  # 4 bytes
         self.previous_hash = previous_hash.encode('utf8')  # 32 bytes
-        self.merkle_root = self.merkle_root()  # 32 bytes
+        self.merkle_root = self.merkle_root(transactions)  # 32 bytes
         self.timestamp = self.block_timestamp()  # 4 bytes
         self.nonce = None  # 4 bytes
         self.target = None  # 4 bytes
 
         # define rest of block
-        self.txcount = len(transactions)  # 4 bytes
         self.transactions = transactions  # NOTE: may need to change
+        self.txcount = len(transactions)  # 4 bytes
         self.size = self.block_size()  # 4 bytes
 
 
@@ -54,9 +55,9 @@ class Block(object):
         # gets the time and sets timestamp
         self.timestamp = str("2017-10-08 13:18:06.810644").encode('utf8')
 
-    def merkle_root(self):
+    def merkle_root(self, transactions):
         # calculates the merkle root and sets it as the blocks merkle_root
-        return 0
+        return findMerkleRoot(transactions)
 
     def version(self, vers):
         # set the version
