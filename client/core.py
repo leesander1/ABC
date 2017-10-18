@@ -65,6 +65,7 @@ def create_conf():
             }
         }
     }
+    # call save_conf
     obj = json.dumps(conf)
     parsed = json.loads(obj)
     try:

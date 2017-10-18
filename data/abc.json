@@ -1,0 +1,25 @@
+{
+    "difficulty": 4,
+    "height": 2,
+    "key": {
+        "private": "private_key",
+        "public": "public_key"
+    },
+    "last_block": "00000080e790b5dac98d097ab2570dc3dd2e4dcf1f0f96a9ea282b407066036a",
+    "peers": {
+        "1": {
+            "ip": "127.0.0.1",
+            "port": 3390
+        },
+        "2": {
+            "ip": "localhost",
+            "port": 3390
+        }
+    },
+    "reward": 100,
+    "version": "00000001",
+    "wallet": {
+        "address": "my_address",
+        "amount": 0
+    }
+}
