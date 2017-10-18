@@ -1,9 +1,12 @@
-
-def parse(arg):
-    'Convert a series of zero or more numbers to an argument tuple'
-    return tuple(map(int, arg.split()))
+"""
+A file containing random functions that may or may not be useful.
+"""
 
 def cromulon():
+    """
+    Returns a cromulon
+    :return: a cromulon ascii img
+    """
     ascii_img = '''
                     ___          
                 . -^   `--,      
@@ -24,4 +27,3 @@ def cromulon():
                     `======/  
                     '''
     return ascii_img
-

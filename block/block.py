@@ -2,7 +2,7 @@ import hashlib
 import sys
 import json
 import datetime as date
-from helpers import findMerkleRoot
+from block.merkle import findMerkleRoot
 
 # define variables
 version = "00000001"  # version
@@ -43,7 +43,8 @@ class Block(object):
         header = 80  # header is 80 bytes
         meta = 8  # the size and txcount are 8 bytes
         # TODO: Calculate the size of the transactions
-        tx = 0
+        # for now assume each tx is 32 bytes
+        tx = len(self.transactions) * 32
         block_size = header + meta + tx
         return block_size
 
@@ -81,23 +82,14 @@ class Block(object):
 
     def print_header(self):
         # pretty prints the header info
-        obj = json.dumps(self.header())
-        parsed = json.loads(obj)
-        print(json.dumps(parsed, indent=4, sort_keys=True))
+        print(json.dumps(self.header(), indent=4, sort_keys=True))
         return
 
     def info(self):
         # returns all the data of the block
         info = {
             'block': self.block_hash(self.nonce),
-            'header': {
-                'version': self.version.decode('utf-8'),
-                'parent': self.previous_hash.decode('utf-8'),
-                'merkle_root': self.merkle_root,
-                'timestamp': self.timestamp.decode('utf-8'),
-                'target': self.target,
-                'nonce': self.nonce
-            },
+            'header': self.header(),
             'txcount': self.txcount,
             'transactions': self.transactions,
             'size': self.size
@@ -106,9 +98,7 @@ class Block(object):
 
     def print_info(self):
         # pretty prints the info json
-        obj = json.dumps(self.info())
-        parsed = json.loads(obj)
-        print(json.dumps(parsed, indent=4, sort_keys=True))
+        print(json.dumps(self.info(), indent=4, sort_keys=True))
         return
 
     def block_hash(self, nonce=None):
@@ -135,7 +125,7 @@ class Block(object):
 
         # return a boolean value
         # checks to see if hash starts with the prefix zeros
-        #print(block_hash)
+        # print(block_hash)
         return block_hash.startswith(prefix)
 
     def mine(self):
@@ -170,8 +160,9 @@ class Block(object):
 
 
 def genesis_block():
-    'Mines the genesis block. (Always the same block) 0000669a5bd0d672a499608a45c24649584fb0b40c8ef6a5f9e6765caf5ae892'
-    b = Block(previous_hash='0000000000000000000000000000000000000000000000000000000000000000', transactions='test')
+    'Mines the genesis block. (Always the same block) 0000b7efc7281627c3a296475b8e142e8a280ea34c22718e6fb16d8aa7a9423e'
+    tnx = ['test1', 'test2', 'test3', 'test4', 'test5']
+    b = Block(previous_hash='0000000000000000000000000000000000000000000000000000000000000000', transactions=tnx)
     Block.target(b, 4)
     Block.genesis_timestamp(b)
     Block.mine(b)

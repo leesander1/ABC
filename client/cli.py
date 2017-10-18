@@ -1,14 +1,15 @@
 ''' The cmd line interface '''
 from block.block import Block, genesis_block
-from client.core import initialize, save_conf, read_block
-from client.helpers import parse, cromulon
+from client.core import initialize, save_conf, read_block, mine
+from client.helpers import cromulon
 import cmd, sys, hashlib, json, signal
 
 
 class CLI(cmd.Cmd, object):
-    '''
+    """
     CLI class is where the controls for the CLI exist.
-    '''
+    """
+
     prompt = 'ABC:$ '  # shows at prompt
     intro = 'Welcome to ABC - A Block Chain. Type help or ? to list commands.\n'
     conf = None  # one config file with the peers,
@@ -19,10 +20,7 @@ class CLI(cmd.Cmd, object):
     def do_start(self, arg):
         'Starts mining process... we might want to mine in background?'
         # note wasn't able to figure out how to stop it...
-        block1 = Block(previous_hash=self.conf["last_block"],
-                       transactions='test')
-        Block.target(block1, self.conf["difficulty"])
-        Block.mine(block1)
+        mine(self.conf)
         return
 
     def do_stop(self, arg):
@@ -70,8 +68,11 @@ class CLI(cmd.Cmd, object):
         return
 
     def onecmd(self, line):
-        ''' define $ as a shortcut for the mine command. x for exit
-            and ask for confirmation when the interpreter exit'''
+        """
+        define $ as a shortcut for the mine command. x for exit
+        and ask for confirmation when the interpreter exit
+        :return: returns a response r
+        """
         if line[:1] == '$':
             line = 'start '+line[1:]
         elif line[:1] == 'x':

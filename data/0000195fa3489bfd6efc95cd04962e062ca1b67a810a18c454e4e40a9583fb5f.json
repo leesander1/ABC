@@ -1,0 +1,21 @@
+{
+    "block": "0000195fa3489bfd6efc95cd04962e062ca1b67a810a18c454e4e40a9583fb5f",
+    "header": {
+        "merkle_root": "ffef4cf8c34639de435c7a5eca877b376cdc6e3294845ec34f91824810da7f9c",
+        "nonce": 3611,
+        "parent": "0000e0960592b74c5ada5aa9281804f065372497c001972d9a9904273ce8b616",
+        "target": 4,
+        "timestamp": "2017-10-18 14:56:50.953466",
+        "version": "00000001"
+    },
+    "size": 280,
+    "transactions": [
+        "test10",
+        "test11",
+        "test6",
+        "test7",
+        "test8",
+        "test9"
+    ],
+    "txcount": 6
+}

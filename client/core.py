@@ -1,6 +1,5 @@
-''' core functionality '''
+""" core functionality """
 from block.block import Block, genesis_block
-from client.helpers import parse
 import cmd, sys, hashlib, json, os, codecs
 
 def initialize():
@@ -21,14 +20,14 @@ def initialize():
             # print('error {0}'.format(e))
             pass
         save_block(b)
-        conf["height"] = 1
-    # print(json.dumps(conf, indent=4, sort_keys=True))
+        conf = increment_height(conf)
+
     return conf
 
 def load_conf():
     # loads the config file
     try:
-        with open('abc.json') as file:
+        with open('{0}/abc.json'.format(os.path.join(os.getcwd(), r'data'))) as file:
             # read in the data
             data = json.load(file)
             file.close()
@@ -36,14 +35,14 @@ def load_conf():
     except IOError as e:
         # file does not exist or not able to read file
         data = create_conf()
-        # print("not able to open conf file")
+        print("not able to open conf file")
     return data
 
 def create_conf():
     # creates a new config
     conf = {
         'height': 0,
-        'last_block': "0000669a5bd0d672a499608a45c24649584fb0b40c8ef6a5f9e6765caf5ae892",
+        'last_block': "0000b7efc7281627c3a296475b8e142e8a280ea34c22718e6fb16d8aa7a9423e",
         'version': "00000001",
         'difficulty': 4,
         'reward': 100,
@@ -69,7 +68,7 @@ def create_conf():
     obj = json.dumps(conf)
     parsed = json.loads(obj)
     try:
-        with open('abc.json', 'w') as file:
+        with open('{0}/abc.json'.format(os.path.join(os.getcwd(), r'data')), 'w') as file:
             json.dump(parsed, file, indent=4, sort_keys=True)
             file.close()
             pass
@@ -81,7 +80,7 @@ def save_conf(conf):
     obj = json.dumps(conf)
     parsed = json.loads(obj)
     try:
-        with open('abc.json', 'w') as file:
+        with open('{0}/abc.json'.format(os.path.join(os.getcwd(), r'data')), 'w') as file:
             json.dump(parsed, file, indent=4, sort_keys=True)
             file.close()
             pass
@@ -124,10 +123,31 @@ def read_block(block_hash):
         # file does not exist or not able to read file
         print('{0}'.format(e))
 
-def mine():
+def bundle_tnx(cbtx):
+    """
+    pull some verified transactions
+    :return: tnx
+    """
+    # tnx = [cbtx, 'test7', 'test8', 'test9', 'test10']  # need to actually get real tnxs
+    tnx = ['test6', 'test7', 'test8', 'test9', 'test10', 'test11']  # need to actually get real tnxs
+    return tnx
+
+def mine(conf):
     # Mines blocks
+    reward_address = conf["wallet"]["address"]
+    reward_amount = conf["reward"]
     # 1) add coinbase tx with reward
+    cbtx = {reward_address, reward_amount}
+
     # 2) bundle transactions
+    tnx = bundle_tnx(cbtx)
+
+    b = Block(previous_hash=conf["last_block"], transactions=tnx)
+    Block.target(b, conf["difficulty"])
+    Block.mine(b)
+    save_block(b)
+    increment_height(conf)
+    update_previous_hash(conf, b.block_hash())
     # 3) if success, save block, update db, update config with updated previous_hash & height
     # 4) notify network
     # 5) repeat
