@@ -23,6 +23,7 @@ def get_private_key():
     Set the private key from a file or by creating a new one
     :return: ECC private key object
     """
+    global _PRIVATE_KEY
     ensure_data_dir()  # ensure directory exists
     if _PRIVATE_KEY:  # if we have already retrieved the key
         key = _PRIVATE_KEY
@@ -36,7 +37,6 @@ def get_private_key():
             file.write(key.export_key(format='PEM'))
             file.close()
 
-    global _PRIVATE_KEY
     _PRIVATE_KEY = key  # cache the key
     return key
 
@@ -47,6 +47,7 @@ def get_public_key(output=None):
     :param output: can equal 'string' if the public key needs to be a string
     :return: string or ECC object representing the public key
     """
+    global _PRIVATE_KEY
     ensure_data_dir()  # ensure directory exists
     if _PUBLIC_KEY:  # if we have already retrieved the key
         key = _PUBLIC_KEY
@@ -62,7 +63,6 @@ def get_public_key(output=None):
             file.close()
 
     # return public key as string or ECC object
-    global _PRIVATE_KEY
     _PRIVATE_KEY = key  # cache the key
     return key.export_key(format='OpenSSH') if output == 'string' else key
 
