@@ -1,6 +1,5 @@
 from Crypto.Hash import SHA256
 import datetime as date
-import json
 
 
 class Block(object):
