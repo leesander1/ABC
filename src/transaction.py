@@ -1,7 +1,6 @@
 from Crypto.Hash import SHA256
 from Crypto.Signature import DSS
-
-from persist.abc_key import import_public_key
+from src.persist.abc_key import import_public_key
 
 
 class Transaction(object):

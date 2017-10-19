@@ -1,4 +1,4 @@
-import persist.abc_key as keys
+from src.persist import abc_key as keys
 from src.block import Block
 from src.transaction import Transaction
 
@@ -12,7 +12,7 @@ def create_transaction(rec_address, amount):
     :return: a complete filled out Transaction object
     """
     inputs = []
-    outputs = ['myAddress', rec_address, amount]
+    outputs = []
 
     # TODO: find inputs to this node
     # TODO: formulate outputs using inputs & amount
