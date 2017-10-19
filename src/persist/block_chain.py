@@ -1,4 +1,4 @@
-from src.block import Block
+from block import Block
 import json
 import os
 

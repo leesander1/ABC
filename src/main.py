@@ -1,6 +1,6 @@
-from src import client
-from src.block import Block
-from src.persist import block_chain
+import client
+from block import Block
+from persist import block_chain
 
 # TODO: Check the status of the network, respond accordingly
 # TODO: wait for command from user

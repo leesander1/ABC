@@ -1,6 +1,6 @@
-from src.persist import abc_key as keys
-from src.block import Block
-from src.transaction import Transaction
+from persist import abc_key as keys
+from block import Block
+from transaction import Transaction
 
 
 def create_transaction(rec_address, amount):
