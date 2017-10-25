@@ -3,7 +3,7 @@ import json
 import os
 
 # private constant file paths
-_PATH_UNSPENT_TNX = os.path.normpath('../data/received_transactions.txt')
+_PATH_UNSPENT_TNX = os.path.normpath('../data/utxos.txt')
 
 
 def ensure_data_dir():
@@ -15,12 +15,22 @@ def ensure_data_dir():
     if not os.path.isdir(data_dir):  # check for existence
         os.mkdir(data_dir)  # create
 
-
-def write_transaction(transactions):
+def write_utxo(transaction):
     ensure_data_dir()
-    pass
 
+    file = open(_PATH_UNSPENT_TNX, 'a')
+    file.write("{}\n".format(json.dumps(transaction.get_data())))
+    file.close()
 
-def read_all_transactions():
+def find_utxo(id, index):
     ensure_data_dir()
-    pass
+
+    ensure_data_dir()
+    try:
+        file = open(_PATH_UNSPENT_TNX, 'r')
+        utxos = json.loads(file.read())
+        print(utxos)
+    except FileNotFoundError:
+
+
+    return utxos

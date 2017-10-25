@@ -4,6 +4,7 @@ from persist.abc_key import import_public_key
 
 
 class Transaction(object):
+
     def __init__(self, **kwargs):
         """
         Instantiate a Transaction object from the network, a file, or by 
@@ -14,93 +15,96 @@ class Transaction(object):
                       and contains a JSON object (Python dict) representation
                       of a transaction. All information necessary to build a
                       Transaction object is in the payload object.
-        
-            OR
-        
-            :sender_pubkey: this node's public key as a string 
-            :inputs: a list of tuples representing all inputs
-                     for this transaction. Only used when creating a new
-                     transaction.
-            :outputs: a list of tuples representing all outputs for
-                      this transaction. Only used when creating a new 
-                      transaction.
         """
 
         self.payload = kwargs.pop('payload', None)
         if self.payload:  # un-packing transaction from network or file
-            self.sender_pubkey = self.payload['sender_pubkey']  # String
-            self.message = self.payload['message']
-            self.id = self.payload['id']
-            self.signature = self.payload['signature']
+            self.input_count = self.payload['input_count']
+            self.inputs = self.payload['inputs']
+            self.output_count = self.payload['output_count']
+            self.outputs = self.payload['outputs']
         else:  # building transaction
-            self.signature = None
-            self.sender_pubkey = kwargs.pop('sender_pubkey')  # String
-            self.message = {"inputs": kwargs.pop('inputs'),
-                            "outputs": kwargs.pop('outputs')}
-            self.id = SHA256.new(  # hash message + sender public key
-                (str(self.message) +
-                 str(self.sender_pubkey))
-                    .encode('utf-8')).hexdigest()  # string format
+            self.outputs = kwargs.pop('outputs')  # list of outputs
+            self.inputs = kwargs.pop('inputs')  # list of inputs
 
-    def get_outputs(self):
+    def unlock_inputs(self, private_key, public_key):
         """
-        Get all outputs for this transaction
-        :return: a list of tuples (sender, receiver, amount)
+        Unlock previous unspent transaction outputs for a new transaction.
+        Compose a transaction message consisting of:
+            - input transaction ID
+            - input output index
+            - unspent transaction object's public key script (hashed pubkey)
+            - this transaction's public key script (s)?
+            - this transaction's output amount (s)?
+        and sign it with this node's private key. 
+        
+        Place a dict consisting of {key: public_key, sig: signature} in the
+        corresponding input at "unlock" where `public_key` is this node's
+        full public key and `signature` is the signed transaction message.
         """
-        return self.message['outputs']
-
-    def get_inputs(self):
-        """
-        Get all inputs for this transaction
-        :return: a list of tuples (sender, receiver, amount)
-        """
-        return self.message['inputs']
-
-    def get_id(self):
-        """
-        Get the transaction id
-        :return: an SHA256 hash of message + sender public key in string
-                 hexadecimal format
-        """
-        return self.id
-
-    def sign(self, sender_private_key):
-        """
-        Sign a transaction using the Elliptic Curve Cryptographic method,
-        using this node's private key and a SHA256 hashed message
-        :param sender_private_key: ECC private key object for this node
-        :return: 
-        """
-        hashed_message = SHA256.new(str(self.message).encode('utf-8'))
-        signer = DSS.new(sender_private_key, 'fips-186-3')
-        signature = signer.sign(hashed_message)
-        self.signature = signature
+        for tnx_input in self.inputs:  # for each input
+            utxo = self.get_utxo(tnx_input['transaction_id'],  # get unspent tnx
+                                 tnx_input['output_index'])
+            transaction_message = SHA256.new((  # compose transaction message
+                str(tnx_input['transaction_id']) +  # input id
+                str(tnx_input['output_index']) +  # output index
+                str(utxo['address']) +  # hashed public key as address
+                str([x['address'] for x in self.outputs]) +  # new outputs
+                str([int(x['amount']) for x in self.outputs])  # new outputs
+            ).encode('utf-8')).hexdigest()
+            signer = DSS.new(private_key, 'fips-186-3')
+            signature = signer.sign(transaction_message)  # sign the message
+            unlock = {  # create unlocking portion of the transaction
+                "public_key": str(public_key),
+                "signature": str(signature)
+            }
+            tnx_input['unlock'] = unlock  # assign to input.
 
     def verify(self):
         """
-        Verify a transaction using the transactions signature, SHA256 hashed
-        message, and ECC public key object of the sender's public key
-        :return: boolean of if the transaction is authentic or not (True
-                 if it is)
+        Verify an incoming transaction.
+            1) SHA256 hash the unspent transaction object's address
+               and SHA256 hash this transaction's signature script key and
+               see if they match. If they do, continue. Otherwise return false.
+               
+            2) Compose the transaction's message consisting of:
+                - input transaction ID
+                - input output index
+                - unspent transaction object's public key script (hashed pubkey)
+                - this transaction's public key script (s)?
+                - this transaction's output amount (s)?
+                and check to see if this transaction's signature can be 
+                verified by the now authorized signature script key.             
+                
+        :return: True if the transaction is valid, false otherwise
         """
-        hashed_message = SHA256.new(str(self.message).encode('utf-8'))
-        ecc_key = import_public_key(self.sender_pubkey)  # get ECC key object
-        verifier = DSS.new(ecc_key, 'fips-186-3')
-        try:
-            verifier.verify(hashed_message, self.signature)
-            authentic = True
-        except ValueError:
-            authentic = False
+        authentic = False
+        for tnx_input in self.inputs:  # for each referenced input
+            utxo = self.get_utxo(tnx_input['transaction_id'],  # get unspent tnx
+                                 tnx_input['output_index'])
+
+            sig_key = SHA256.new(  # get this transaction's signature script key
+                tnx_input['unlock']['key'].encode('utf-8')
+            ).hexdigest()
+            if sig_key == utxo['address']:  # if this node is the recipient of
+                                            # the previous utxo
+                transaction_message = SHA256.new((
+                    str(tnx_input['transaction_id']) +
+                    str(tnx_input['output_index']) +
+                    str(utxo['address']) +
+                    str([x['address'] for x in self.outputs]) +
+                    str([int(x['amount']) for x in self.outputs])
+                ).encode('utf-8')).hexdigest()
+                ecc_key = import_public_key(tnx_input['unlock']['key'])
+                signature = tnx_input['unlock']['signature']
+                verifier = DSS.new(ecc_key, 'fips-186-3')
+                try:
+                    verifier.verify(transaction_message, signature)
+                    authentic = True
+                except ValueError:
+                    authentic = False
+
         return authentic
 
-    def get_data(self):
-        """
-        Get a dict representation of the Transaction object
-        :return: a dict of the Transaction object
-        """
-        return {
-            "id": self.id,
-            "sender_pubkey": str(self.sender_pubkey),
-            "signature": str(self.signature),
-            "message": self.message
-        }
+    def get_utxo(self, input_id, output_index):
+        return {}

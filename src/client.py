@@ -1,6 +1,8 @@
 from persist import abc_key as keys
+from persist import transactions
+from persist import block_chain
 from block import Block
-from transaction import Transaction
+from transaction import Transaction, create_genesis_transaction
 
 
 def create_transaction(rec_address, amount):
@@ -11,16 +13,15 @@ def create_transaction(rec_address, amount):
     :param amount: the amount to the receivers address
     :return: a complete filled out Transaction object
     """
-    inputs = []
-    outputs = []
-
     # TODO: find inputs to this node
-    # TODO: formulate outputs using inputs & amount
     # TODO: remove inputs from this node (avoid double spending)
-    transaction = Transaction(sender_pubkey=keys.get_public_key(
-        output='string'),
-                              inputs=inputs,
-                              outputs=outputs)
+    transaction = Transaction(
+        input_id='0',
+        output_index='0',
+        pubkey_script=rec_address,
+        public_key=keys.get_public_key(output='string'),
+        amount=amount
+    )
 
     transaction.sign(keys.get_private_key())
 
@@ -44,17 +45,17 @@ def create_genesis():
     Create a genesis block (the first block in the block chain)
     :return: a new Block object
     """
-    inputs = [  # inputs (from, to, amount)
-        ("null", "genesis", 21000),
-    ]
-    outputs = [  # outputs (from, to, amount)
-        ("genesis", "kevin", 7000),
-        ("genesis", "dane", 7000),
-        ("genesis", "lee", 7000),
-    ]
-    tnx0 = Transaction(sender_pubkey="genesis",
-                       inputs=inputs,
-                       outputs=outputs)
 
-    data = {0: tnx0.get_data()}
-    return Block(index=0, data=data, previous_hash="0")
+    # to use a utxo as an input above, the node's pubkey must match the utxo's
+    # pubkey, and the pubkey must be used to verify the sig
+    # the sig is the utxo's protected data () hashed together and signed by
+    # the recepients private key.
+
+    data = create_genesis_transaction(
+        amount=7000,
+        rec_address=keys.get_public_key(output='string'),
+        private_key=keys.get_private_key()
+    )
+    block = Block(index=0, data=data, previous_hash="0")
+    block_chain.write_block(block)
+    return block
