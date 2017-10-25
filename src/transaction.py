@@ -15,6 +15,40 @@ class Transaction(object):
                       and contains a JSON object (Python dict) representation
                       of a transaction. All information necessary to build a
                       Transaction object is in the payload object.
+                      
+                      
+            Otherwise, it is assumed that a new transaction is being created,
+            and subsequent calls to `Transaction().add_output()` are needed
+            to fill the transaction, followed by `Transaction().unlock_inputs()`
+            to complete the new Transaction.
+        
+        :notes
+        
+            Transaction Input Structure:
+                    {
+                        transaction_id: # hash of previous transaction,
+                        output_index: # index of referenced output,
+                        unlock: {
+                                    public_key: # full public key of sender
+                                    signature: # signature of this transaction
+                                }
+                    }
+                    
+            Transaction Output Structure:
+                    {
+                        address: # hashed public key of recipient,
+                        amount: # amount for this output
+                    }
+                    
+                    
+            Transaction structure:
+                    {
+                        input_count: # how many transaction inputs
+                        inputs: # dict of transaction input objects
+                        output_count: # how many transaction outputs
+                        outputs: # dict of transaction output objects
+                    }
+            
         """
 
         self.payload = kwargs.pop('payload', None)
@@ -76,7 +110,8 @@ class Transaction(object):
         corresponding input at "unlock" where `public_key` is this node's
         full public key and `signature` is the signed transaction message.
         """
-
+        # TODO: before unlcoking, make sure we have used up all input amounts
+        
         for tnx_input in self.inputs:  # for each input
             utxo = find_utxo(tnx_input['transaction_id'],  # get unspent tnx
                              tnx_input['output_index'])
