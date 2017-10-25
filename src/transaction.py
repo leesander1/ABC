@@ -110,7 +110,16 @@ class Transaction(object):
         corresponding input at "unlock" where `public_key` is this node's
         full public key and `signature` is the signed transaction message.
         """
-        # TODO: before unlcoking, make sure we have used up all input amounts
+        # before unlocking, make sure we have used up all input amounts
+        if self.unused_amount != 0:
+            # create the new output, giving leftovers to the sender
+            hash_address = SHA256.new(public_key.encode('utf-8')).hexdigest()
+            self.outputs[self.output_count] = {
+                "address": hash_address,
+                "amount": self.unused_amount
+            }
+            self.output_count += 1
+            self.unused_amount = 0
         
         for tnx_input in self.inputs:  # for each input
             utxo = find_utxo(tnx_input['transaction_id'],  # get unspent tnx
@@ -155,7 +164,7 @@ class Transaction(object):
             utxo = find_utxo(tnx_input['transaction_id'],  # get unspent tnx
                              tnx_input['output_index'])
 
-            sig_key = SHA256.new(  # get this transaction's signature script key
+            sig_key = SHA256.new(  # get this transaction's unlock public key
                 tnx_input['unlock']['public_key'].encode('utf-8')
             ).hexdigest()
             if sig_key == utxo['address']:  # if this node is the recipient of
@@ -164,8 +173,7 @@ class Transaction(object):
                         str(tnx_input['transaction_id']) +  # input id
                         str(tnx_input['output_index']) +  # output index
                         str(utxo['address']) +  # hashed public key as address
-                        str([x['address'] for x in
-                             self.outputs]) +  # new outputs
+                        str([x['address'] for x in self.outputs]) +
                         str([int(x['amount']) for x in self.outputs])
                 ).encode('utf-8')).hexdigest()
 
