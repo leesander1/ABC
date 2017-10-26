@@ -25,6 +25,7 @@ class Transaction(object):
         :notes
 
             Transaction Input Structure:
+            {
                     index: {
                         transaction_id: # hash of previous transaction,
                         output_index: # index of referenced output,
@@ -32,32 +33,36 @@ class Transaction(object):
                                     public_key: # full public key of sender
                                     signature: # signature of this transaction
                                 }
-                    }
+                    },
+            }
 
             Transaction Output Structure:
+            {
                    index: {
                         address: # hashed public key of recipient,
                         amount: # amount for this output
-                    }
+                    },
+            }
 
             Unspent Transaction Structure:
+            {
                    id: {
                         index: {
                             address: 
                             amount: 
                         },
-                    }
-
-
+                    },
+            }
 
             Transaction structure:
+            {
                     id: {
                         input_count: # how many transaction inputs
                         inputs: # dict of transaction input objects
                         output_count: # how many transaction outputs
                         outputs: # dict of transaction output objects
-                    }
-
+                    },
+            }      
         """
 
         self.payload = kwargs.pop('payload', None)
@@ -138,14 +143,11 @@ class Transaction(object):
                             tnx_input['output_index'])
 
             transaction_message = SHA256.new((  # compose transaction message
-                                                 str(tnx_input[
-                                                         'transaction_id']) +  # input id
-                                                 str(tnx_input[
-                                                         'output_index']) +  # output index
-                                                 str(utxo[
-                                                         'address']) +  # hashed public key as address
-                                                 str(self.outputs)
-                                             ).encode('utf-8'))
+                str(tnx_input['transaction_id']) +  # input id
+                str(tnx_input['output_index']) +  # output index
+                str(utxo['address']) +  # hashed public key as address
+                str(self.outputs)
+            ).encode('utf-8'))
             signer = DSS.new(private_key, 'fips-186-3')
             signature = signer.sign(transaction_message)  # sign the message
 
@@ -187,14 +189,11 @@ class Transaction(object):
             if sig_key == utxo['address']:  # if this node is the recipient of
                 # the previous utxo
                 transaction_message = SHA256.new((  # transaction message
-                                                     str(tnx_input[
-                                                             'transaction_id']) +  # input id
-                                                     str(tnx_input[
-                                                             'output_index']) +  # output index
-                                                     str(utxo[
-                                                             'address']) +  # hashed public key as address
-                                                     str(self.outputs)
-                                                 ).encode('utf-8'))
+                    str(tnx_input['transaction_id']) +  # input id
+                    str(tnx_input['output_index']) +  # output index
+                    str(utxo['address']) +  # hashed public key as address
+                    str(self.outputs)
+                ).encode('utf-8'))
 
                 ecc_key = import_public_key(tnx_input['unlock']['public_key'])
                 signature = tnx_input['unlock']['signature']
@@ -275,15 +274,11 @@ class Transaction(object):
 
         # fill the unlock signature
         transaction_message = SHA256.new((  # compose transaction message
-                                             str(transaction['inputs'][0][
-                                                     'transaction_id']) +  # input id
-                                             str(transaction['inputs'][0][
-                                                     'output_index']) +  # output index
-                                             str(
-                                                 hashed_address) +  # hashed public key as address
-                                             str(transaction['outputs'])
-                                         # new outputs
-                                         ).encode('utf-8'))
+            str(transaction['inputs'][0]['transaction_id']) +  # input id
+            str(transaction['inputs'][0]['output_index']) +  # output index
+            str(hashed_address) +  # hashed public key as address
+            str(transaction['outputs'])# new outputs
+            ).encode('utf-8'))
         signer = DSS.new(private_key, 'fips-186-3')
         signature = str(signer.sign(transaction_message))  # sign the message
         transaction['inputs'][0]['unlock']['signature'] = signature
