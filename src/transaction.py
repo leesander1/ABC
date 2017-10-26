@@ -1,7 +1,7 @@
 from Crypto.Hash import SHA256
 from Crypto.Signature import DSS
 from persist.abc_key import import_public_key
-from persist.transactions import find_utxo, get_amount, get_utxo
+from persist.transactions import find_unspent_output, get_unspent_outputs
 
 
 class Transaction(object):
@@ -88,7 +88,7 @@ class Transaction(object):
         # if we have leftover from previous output we use it
         amount -= self.unused_amount  # subtract leftovers from previous outputs
         self.unused_amount = 0  # reset unused amount
-        utxos, total = get_amount(amount)  # get inputs and their sum
+        utxos, total = get_unspent_outputs(amount)  # get inputs and their sum
 
         if total >= amount:
             # add the unspent transaction output as an input
@@ -132,10 +132,10 @@ class Transaction(object):
             }
             self.output_count += 1
             self.unused_amount = 0
-        
+
         for tnx_input in self.inputs:  # for each input
-            utxo = get_utxo(tnx_input['transaction_id'],  # get unspent tnx
-                             tnx_input['output_index'])
+            utxo = find_unspent_output(tnx_input['transaction_id'],  # get unspent tnx
+                                       tnx_input['output_index'])
 
             transaction_message = SHA256.new((  # compose transaction message
                 str(tnx_input['transaction_id']) +  # input id
@@ -172,8 +172,9 @@ class Transaction(object):
         """
         authentic = False
         for tnx_input in self.inputs:  # for each referenced input
-            utxo = find_utxo(tnx_input['transaction_id'],  # get unspent tnx
-                             tnx_input['output_index'])
+            utxo = find_unspent_output(tnx_input['transaction_id'],  # get unspent tnx
+                                       tnx_input['output_index'],
+                                       use_block_chain=True)
 
             sig_key = SHA256.new(  # get this transaction's unlock public key
                 tnx_input['unlock']['public_key'].encode('utf-8')

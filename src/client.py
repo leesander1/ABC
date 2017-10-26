@@ -48,5 +48,5 @@ def create_genesis():
     data = {genesis_transaction.get_transaction_id(): genesis_transaction.get_data()}
     block = Block(index=0, data=data, previous_hash="0")
     block_chain.write_block(block)
-    block_chain.write_utxos(block.get_transactions(), keys.get_public_key(output='string'))
+    # block_chain.write_utxos(block.get_transactions(), keys.get_public_key(output='string'))
     return block
