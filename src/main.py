@@ -17,17 +17,18 @@ from persist import block_chain
 g_block = client.create_genesis()
 
 # Make a new block
-new_tnx = client.create_transaction("testdummy1", 400)  # dummy tnx
-new_tnx1 = client.create_transaction("testdummy2", 500)  # dummy tnx
-
-data = {  # block data (dict of transactions included in block)
-    new_tnx.get_new_id(): new_tnx.get_data(),
-    new_tnx1.get_new_id(): new_tnx.get_data()
-}
-new_block = g_block.get_next_block(data)
-block_chain.write_block(new_block)
-
-print(new_tnx1.verify())
+# new_tnx = client.create_transaction("testdummy1", 400)  # dummy tnx
+# print(new_tnx)
+# new_tnx1 = client.create_transaction("testdummy2", 500)  # dummy tnx
+#
+# data = {  # block data (dict of transactions included in block)
+#     new_tnx.get_new_id(): new_tnx.get_data(),
+#     new_tnx1.get_new_id(): new_tnx.get_data()
+# }
+# new_block = g_block.get_next_block(data)
+# block_chain.write_block(new_block)
+#
+# print(new_tnx1.verify())
 
 #
 # # Try to put an invalid block in the block chain

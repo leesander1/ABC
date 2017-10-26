@@ -1,7 +1,7 @@
 from Crypto.Hash import SHA256
 from Crypto.Signature import DSS
 from persist.abc_key import import_public_key
-from persist.transactions import find_utxo, get_amount
+from persist.transactions import find_utxo, get_amount, get_utxo
 
 
 class Transaction(object):
@@ -42,9 +42,12 @@ class Transaction(object):
                     
             Unspent Transaction Structure:
                    id: {
-                        address: 
-                        amount: 
-                   }
+                        index: {
+                            address: 
+                            amount: 
+                        },
+                    }
+                   
                     
                     
             Transaction structure:
@@ -131,7 +134,7 @@ class Transaction(object):
             self.unused_amount = 0
         
         for tnx_input in self.inputs:  # for each input
-            utxo = find_utxo(tnx_input['transaction_id'],  # get unspent tnx
+            utxo = get_utxo(tnx_input['transaction_id'],  # get unspent tnx
                              tnx_input['output_index'])
 
             transaction_message = SHA256.new((  # compose transaction message
@@ -139,7 +142,7 @@ class Transaction(object):
                 str(tnx_input['output_index']) +  # output index
                 str(utxo['address']) +  # hashed public key as address
                 str(self.outputs)
-            ).encode('utf-8')).hexdigest()
+            ).encode('utf-8'))
             signer = DSS.new(private_key, 'fips-186-3')
             signature = signer.sign(transaction_message)  # sign the message
 
@@ -184,7 +187,7 @@ class Transaction(object):
                         str(tnx_input['output_index']) +  # output index
                         str(utxo['address']) +  # hashed public key as address
                         str(self.outputs)
-                ).encode('utf-8')).hexdigest()
+                ).encode('utf-8'))
 
                 ecc_key = import_public_key(tnx_input['unlock']['public_key'])
                 signature = tnx_input['unlock']['signature']
@@ -195,22 +198,6 @@ class Transaction(object):
                 except ValueError:
                     authentic = False
         return authentic
-
-    def get_outputs(self, public_key=None):
-        """
-        Get a dict of transaction outputs that are sent to  `public_key`
-        :param public_key: a full public key 
-        :return: a dict of outputs 
-        """
-        if public_key:
-            my_outputs = {}
-            hash_address = SHA256.new(public_key.encode('utf-8')).hexdigest()
-            for key, output in self.outputs.items():
-                if output['address'] == hash_address:
-                    my_outputs[key] = output
-        else:
-            my_outputs = self.outputs
-        return my_outputs
 
     def get_transaction_id(self):
         """
@@ -244,10 +231,10 @@ class Transaction(object):
             "output_count": self.output_count,
             "outputs": self.outputs
         }
-        return {txid: transaction}
+        return transaction
 
     @staticmethod
-    def _create_genesis_transaction(private_key, public_key):
+    def create_genesis_transaction(private_key, public_key):
         """
         Create the genesis transaction.
         :param private_key: 
@@ -257,6 +244,7 @@ class Transaction(object):
 
         hashed_address = SHA256.new(public_key.encode('utf-8')).hexdigest()
         transaction = {
+            "transaction_id": '',
             "input_count": 1,
             "inputs": {
                 0: {
@@ -284,13 +272,14 @@ class Transaction(object):
             str(transaction['inputs'][0]['output_index']) +  # output index
             str(hashed_address) +  # hashed public key as address
             str(transaction['outputs'])  # new outputs
-        ).encode('utf-8')).hexdigest()
+        ).encode('utf-8'))
         signer = DSS.new(private_key, 'fips-186-3')
-        signature = signer.sign(transaction_message)  # sign the message
+        signature = str(signer.sign(transaction_message))  # sign the message
         transaction['inputs'][0]['unlock']['signature'] = signature
 
-        transaction_id = SHA256.new(str(transaction)).hexdigest()
-        return {transaction_id: transaction}
+        transaction_id = SHA256.new(str(transaction).encode('utf-8')).hexdigest()
+        transaction['transaction_id'] = transaction_id
+        return Transaction(payload=transaction)
 
 
 

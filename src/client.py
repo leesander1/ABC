@@ -1,8 +1,7 @@
 from persist import abc_key as keys
-from persist import transactions
 from persist import block_chain
 from block import Block
-from transaction import Transaction, create_genesis_transaction
+from transaction import Transaction
 
 
 def create_transaction(rec_address, amount):
@@ -15,17 +14,10 @@ def create_transaction(rec_address, amount):
     """
     # TODO: find inputs to this node
     # TODO: remove inputs from this node (avoid double spending)
-    transaction = Transaction(
-        input_id='0',
-        output_index='0',
-        pubkey_script=rec_address,
-        public_key=keys.get_public_key(output='string'),
-        amount=amount
-    )
+    transaction = Transaction()
 
-    transaction.sign(keys.get_private_key())
-
-    return transaction
+    transaction.add_output(rec_address, amount)
+    return transaction.get_data()
 
 
 def send_transaction(rec_address, amount):
@@ -51,11 +43,10 @@ def create_genesis():
     # the sig is the utxo's protected data () hashed together and signed by
     # the recepients private key.
 
-    data = create_genesis_transaction(
-        amount=7000,
-        rec_address=keys.get_public_key(output='string'),
-        private_key=keys.get_private_key()
-    )
+    genesis_transaction = Transaction.create_genesis_transaction(keys.get_private_key(),
+                                                        keys.get_public_key(output='string'))
+    data = {genesis_transaction.get_transaction_id(): genesis_transaction.get_data()}
     block = Block(index=0, data=data, previous_hash="0")
     block_chain.write_block(block)
+    block_chain.write_utxos(block.get_transactions(), keys.get_public_key(output='string'))
     return block

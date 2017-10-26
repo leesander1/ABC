@@ -1,9 +1,11 @@
 from block import Block
+from Crypto.Hash import SHA256
 import json
 import os
 
 # private constant file paths
 _PATH_BLOCK_CHAIN = os.path.normpath('../data/block_chain.txt')
+_PATH_UNSPENT_TNX = os.path.normpath('../data/utxos.txt')
 
 
 def ensure_data_dir():
@@ -27,7 +29,9 @@ def write_block(block):
 
     if block.index == 0:  # genesis block
         file = open(_PATH_BLOCK_CHAIN, 'wt')
-        file.write("{}\n".format(json.dumps(block.get_data())))
+        data = block.get_data()
+        dump = json.dumps(data)
+        file.write("{}\n".format(dump))
         file.close()
         success = True
     else:  # not genesis block
@@ -38,7 +42,6 @@ def write_block(block):
             file.write("{}\n".format(json.dumps(block.get_data())))
             file.close()
             success = True
-
     return success
 
 
