@@ -153,3 +153,38 @@ def mine(conf):
     # 4) notify network
     # 5) repeat
     return
+
+
+def ensure_data_dir():
+    """
+    Check to see if the data directory exists.
+    If not, create it
+    """
+    data_dir = os.path.normpath('../data/')
+    if not os.path.isdir(data_dir):  # check for existence
+        os.mkdir(data_dir)  # create
+
+
+_PATH_UNSPENT_TNX = os.path.normpath('../data/utxos.txt')
+
+
+def get_amount(amount):
+    """
+    Create a dict of unspent transaction outputs that add up
+    to or exceed `amount`
+    :param amount: the minimum amount required from the utxos
+    :return: a dict of utxo's and their total amount
+    """
+    return {}
+
+
+def find_utxo(transaction_id, output_index, use_block_chain=False):
+    """
+    Get an unspent transaction output from either the block chain
+    or this node's unspent transaction outputs
+    :param transaction_id: the id of the transaction containing the utxo
+    :param output_index: the index of the utxo within the transaction
+    :param use_block_chain: True to search the block chain for the utxo
+    :return: a utxo dict
+    """
+    return {}
