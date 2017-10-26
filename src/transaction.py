@@ -25,7 +25,7 @@ class Transaction(object):
         :notes
         
             Transaction Input Structure:
-                    {
+                    index: {
                         transaction_id: # hash of previous transaction,
                         output_index: # index of referenced output,
                         unlock: {
@@ -35,14 +35,20 @@ class Transaction(object):
                     }
                     
             Transaction Output Structure:
-                    {
+                   index: {
                         address: # hashed public key of recipient,
                         amount: # amount for this output
                     }
                     
+            Unspent Transaction Structure:
+                   id: {
+                        address: 
+                        amount: 
+                   }
+                    
                     
             Transaction structure:
-                    {
+                    id: {
                         input_count: # how many transaction inputs
                         inputs: # dict of transaction input objects
                         output_count: # how many transaction outputs
@@ -53,11 +59,13 @@ class Transaction(object):
 
         self.payload = kwargs.pop('payload', None)
         if self.payload:  # un-packing transaction from network or file
+            self.transaction_id = self.payload['transaction_id']
             self.input_count = self.payload['input_count']
             self.inputs = self.payload['inputs']
             self.output_count = self.payload['output_count']
             self.outputs = self.payload['outputs']
         else:  # creating new transaction
+            self.transaction_id = None
             self.input_count = 0
             self.inputs = {}
             self.output_count = 0
@@ -72,6 +80,7 @@ class Transaction(object):
         :param amount: the amount to send
         :return: True if the output was added, false otherwise
         """
+
         success = False
         # if we have leftover from previous output we use it
         amount -= self.unused_amount  # subtract leftovers from previous outputs
@@ -129,8 +138,7 @@ class Transaction(object):
                 str(tnx_input['transaction_id']) +  # input id
                 str(tnx_input['output_index']) +  # output index
                 str(utxo['address']) +  # hashed public key as address
-                str([x['address'] for x in self.outputs]) +  # new outputs
-                str([int(x['amount']) for x in self.outputs])  # new outputs
+                str(self.outputs)
             ).encode('utf-8')).hexdigest()
             signer = DSS.new(private_key, 'fips-186-3')
             signature = signer.sign(transaction_message)  # sign the message
@@ -167,14 +175,15 @@ class Transaction(object):
             sig_key = SHA256.new(  # get this transaction's unlock public key
                 tnx_input['unlock']['public_key'].encode('utf-8')
             ).hexdigest()
+
+            # TODO: what if they are different public keys but same private key?
             if sig_key == utxo['address']:  # if this node is the recipient of
                 # the previous utxo
                 transaction_message = SHA256.new((  # transaction message
                         str(tnx_input['transaction_id']) +  # input id
                         str(tnx_input['output_index']) +  # output index
                         str(utxo['address']) +  # hashed public key as address
-                        str([x['address'] for x in self.outputs]) +
-                        str([int(x['amount']) for x in self.outputs])
+                        str(self.outputs)
                 ).encode('utf-8')).hexdigest()
 
                 ecc_key = import_public_key(tnx_input['unlock']['public_key'])
@@ -186,3 +195,104 @@ class Transaction(object):
                 except ValueError:
                     authentic = False
         return authentic
+
+    def get_outputs(self, public_key=None):
+        """
+        Get a dict of transaction outputs that are sent to  `public_key`
+        :param public_key: a full public key 
+        :return: a dict of outputs 
+        """
+        if public_key:
+            my_outputs = {}
+            hash_address = SHA256.new(public_key.encode('utf-8')).hexdigest()
+            for key, output in self.outputs.items():
+                if output['address'] == hash_address:
+                    my_outputs[key] = output
+        else:
+            my_outputs = self.outputs
+        return my_outputs
+
+    def get_transaction_id(self):
+        """
+        Calculate the transaction id. 
+        :return: the transaction id of this transaction
+        """
+        transaction = {
+                "input_count": self.input_count,
+                "inputs": self.inputs,
+                "output_count": self.output_count,
+                "outputs": self.outputs
+            }
+        txid = SHA256.new(
+                str(transaction).encode('utf-8')
+        ).hexdigest()
+        self.transaction_id = txid
+        return txid
+
+    def get_data(self):
+        """
+        Get a dict representation of a transaction with the
+        transaction id as the key
+        :return: a dict representation of the transaction object with the 
+                 transaction id as its key
+        """
+        txid = self.get_transaction_id()
+        transaction = {
+            "transaction_id": txid,
+            "input_count": self.input_count,
+            "inputs": self.inputs,
+            "output_count": self.output_count,
+            "outputs": self.outputs
+        }
+        return {txid: transaction}
+
+    @staticmethod
+    def _create_genesis_transaction(private_key, public_key):
+        """
+        Create the genesis transaction.
+        :param private_key: 
+        :param public_key: 
+        :return: 
+        """
+
+        hashed_address = SHA256.new(public_key.encode('utf-8')).hexdigest()
+        transaction = {
+            "input_count": 1,
+            "inputs": {
+                0: {
+                    "transaction_id": '',
+                    "output_index": -1,
+                    "unlock": {
+                        "public_key": public_key,
+                        "signature": ''
+                    }
+                }
+            },
+            "output_count": 1,
+            "outputs": {
+                0: {
+                    "address": hashed_address,
+                    "amount": 7000
+                }
+
+            }
+        }
+
+        # fill the unlock signature
+        transaction_message = SHA256.new((  # compose transaction message
+            str(transaction['inputs'][0]['transaction_id']) +  # input id
+            str(transaction['inputs'][0]['output_index']) +  # output index
+            str(hashed_address) +  # hashed public key as address
+            str(transaction['outputs'])  # new outputs
+        ).encode('utf-8')).hexdigest()
+        signer = DSS.new(private_key, 'fips-186-3')
+        signature = signer.sign(transaction_message)  # sign the message
+        transaction['inputs'][0]['unlock']['signature'] = signature
+
+        transaction_id = SHA256.new(str(transaction)).hexdigest()
+        return {transaction_id: transaction}
+
+
+
+
+
