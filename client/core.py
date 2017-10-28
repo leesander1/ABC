@@ -1,6 +1,6 @@
 """ core functionality """
 from block.block import Block, genesis_block
-import cmd, sys, hashlib, json, os, codecs
+import cmd, sys, hashlib, json, os, codecs, copy
 
 def initialize():
     # initialize program on startup
@@ -165,17 +165,45 @@ def ensure_data_dir():
         os.mkdir(data_dir)  # create
 
 
-_PATH_UNSPENT_TNX = os.path.normpath('../data/utxos.txt')
+_PATH_UNSPENT_TNX = os.path.normpath('../data/utxo.json')
 
 
 def get_amount(amount):
     """
     Create a dict of unspent transaction outputs that add up
     to or exceed `amount`
+    NOTE: This function assumes that the TX fee is included in the param amount
+    NOTE: This is most efficient if UTXOs are sorted in descending amount value
     :param amount: the minimum amount required from the utxos
-    :return: a dict of utxo's and their total amount
+    :return: a dict of utxo's if sufficient funds found, otherwise an empty dict
     """
-    return {}
+
+    with open('{0}/utxo.json'.format(os.path.join(os.getcwd(), r'data'))) as file:
+        data = json.load(file)
+        file.close()
+
+    utxos = copy.deepcopy(data)
+    selected_utxos = {}
+    utxo_sum = 0
+
+    for key, value in utxos.items():
+        if utxo_sum < amount:
+            selected_utxos[key] = value
+            data.pop(key)
+            utxo_sum = utxo_sum + value['amount']
+            print(utxo_sum)
+        else:
+            break
+
+    if utxo_sum < amount:
+        return {}
+    else:
+        with open('{0}/utxo.json'.format(os.path.join(os.getcwd(), r'data')), 'w') as file:
+            json.dump(data, file)
+            file.close()
+        return selected_utxos
+
+
 
 
 def find_utxo(transaction_id, output_index, use_block_chain=False):
