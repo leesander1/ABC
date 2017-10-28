@@ -99,8 +99,19 @@ class Transaction(object):
             # add the unspent transaction output as an input
             success = True
             self.unused_amount = total - amount  # calculate leftovers
-            self.inputs[self.input_count] = utxos  # add utxos as inputs
-            self.input_count += 1
+
+            """
+            Need to talk about how we want to concat utxos 
+            I'm confused why Bitcoin has an index number for utxo
+            Also, im not sure why you are doing it this way; for the index number? 
+            
+            Also we need to distribute the change and leave room for fees
+            """
+            self.inputs.update(utxos)
+            self.input_count += list(utxos.keys()).count()
+
+            #self.inputs[self.input_count] = utxos  # add utxos as inputs
+            #self.input_count += 1
 
             # create the new output
             hash_address = SHA256.new(address.encode('utf-8')).hexdigest()
