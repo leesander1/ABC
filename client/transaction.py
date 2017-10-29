@@ -48,9 +48,9 @@ class Transaction(object):
             Transaction structure:
                     id: {
                         input_count: # how many transaction inputs
-                        inputs: # dict of transaction input objects
+                        inputs: # list of transaction input objects
                         output_count: # how many transaction outputs
-                        outputs: # dict of transaction output objects
+                        outputs: # list of transaction output objects
                     }
 
         """
