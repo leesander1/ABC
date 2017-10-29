@@ -34,7 +34,7 @@ def get_private_key():
     return key
 
 
-def get_public_key(output=None):
+def get_public_key():
     """
     Get the public key from a file or by creating a new one
     :param output: can equal 'string' if the public key needs to be a string
@@ -52,7 +52,7 @@ def get_public_key(output=None):
         file.close()
 
     # return public key as string or ECC object
-    return key.export_key(format='OpenSSH') if output == 'string' else key
+    return key.export_key(format='OpenSSH')
 
 
 def import_public_key(public_key):
