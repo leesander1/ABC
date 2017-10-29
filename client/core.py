@@ -178,36 +178,41 @@ def get_unspent_outputs(amount):
     :return: a dict of utxo's if sufficient funds found, otherwise an empty dict. Also returns utxo sum
     """
 
-    with open('{0}/utxo.json'.format(os.path.join(os.getcwd(), r'data'))) as file:
-        data = json.load(file)
-        file.close()
-
-    utxos = copy.deepcopy(data)
-    selected_utxos = {}
-    utxo_sum = 0
-
-    for key, value in utxos.items():
-        if utxo_sum < amount:
-            selected_utxos[key] = value
-            data.pop(key)
-            utxo_sum = utxo_sum + value['amount']
-        else:
-            break
-
-    if utxo_sum >= amount:
-        # if there was sufficient funds, remove them from the utxo file
-        with open('{0}/utxo.json'.format(os.path.join(os.getcwd(), r'data')), 'w') as file:
-            json.dump(data, file)
+    try:
+        with open('{0}/utxo.json'.format(os.path.join(os.getcwd(), r'data'))) as file:
+            data = json.load(file)
             file.close()
 
-    return selected_utxos, utxo_sum
+        utxos = copy.deepcopy(data)
+        selected_utxos = {}
+        utxo_sum = 0
+
+        for key, value in utxos.items():
+            if utxo_sum < amount:
+                selected_utxos[key] = value
+                data.pop(key)
+                utxo_sum = utxo_sum + value['amount']
+            else:
+                break
+
+        if utxo_sum >= amount:
+            # if there was sufficient funds, remove them from the utxo file
+            with open('{0}/utxo.json'.format(os.path.join(os.getcwd(), r'data')), 'w') as file:
+                json.dump(data, file)
+                file.close()
+
+        return selected_utxos, utxo_sum
+    except IOError as e:
+        # file does not exist or not able to read file
+        print('{0}'.format(e))
 
 
-def find_unspent_output(transaction_id, output_index):
+def find_unspent_output(transaction_id, output_index, block_hash):
     """
     Get an unspent transaction output from the block chain
     :param transaction_id: id of the transaction
-    :param output_index: index of the output within the transaction 
+    :param output_index: index of the output within the transaction
+    :param block_hash: the block hash of the transaction
     :return: 
         
         a dict representing an unspent transaction output in the form:
@@ -215,8 +220,27 @@ def find_unspent_output(transaction_id, output_index):
         {
             "transaction_id": "",
             "output_index": "",
-            "address": ""
+            "address": "",
+            "amount": ""
         }
         
     """
-    return {}
+
+    try:
+        with open('{0}/{1}.json'.format(os.path.join(os.getcwd(), r'data'), block_hash)) as file:
+            data = json.load(file)
+            file.close()
+
+            output = data["transactions"][transaction_id]["outputs"][output_index]
+
+            # adding additional info to the output object(since the output structure does not include index or id)
+            output["transaction_id"] = transaction_id
+            output["output_index"] = output_index
+
+        return output
+    except IOError as e:
+        # file does not exist or not able to read file
+        print('{0}'.format(e))
+    except KeyError as e:
+        # error finding utxo
+        print('Transaction not found\nTXID:{0}'.format(e))
