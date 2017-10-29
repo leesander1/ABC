@@ -168,7 +168,7 @@ def ensure_data_dir():
 _PATH_UNSPENT_TNX = os.path.normpath('../data/utxo.json')
 
 
-def get_amount(amount):
+def get_unspent_outputs(amount):
     """
     Create a dict of unspent transaction outputs that add up
     to or exceed `amount`
@@ -203,15 +203,20 @@ def get_amount(amount):
     return selected_utxos, utxo_sum
 
 
-
-
-def find_utxo(transaction_id, output_index, use_block_chain=False):
+def find_unspent_output(transaction_id, output_index):
     """
-    Get an unspent transaction output from either the block chain
-    or this node's unspent transaction outputs
-    :param transaction_id: the id of the transaction containing the utxo
-    :param output_index: the index of the utxo within the transaction
-    :param use_block_chain: True to search the block chain for the utxo
-    :return: a utxo dict
+    Get an unspent transaction output from the block chain
+    :param transaction_id: id of the transaction
+    :param output_index: index of the output within the transaction 
+    :return: 
+        
+        a dict representing an unspent transaction output in the form:
+        
+        {
+            "transaction_id": "",
+            "output_index": "",
+            "address": ""
+        }
+        
     """
     return {}

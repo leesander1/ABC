@@ -1,7 +1,8 @@
 from Crypto.Hash import SHA256
 from Crypto.Signature import DSS
 from client.wallet import import_public_key
-from client.core import get_amount, find_utxo
+from client.core import find_unspent_output, get_unspent_outputs
+import base64
 
 
 class Transaction(object):
@@ -25,8 +26,8 @@ class Transaction(object):
         :notes
 
             Transaction Input Structure:
-            {
-                    index: {
+                [
+                    {
                         transaction_id: # hash of previous transaction,
                         output_index: # index of referenced output,
                         unlock: {
@@ -34,35 +35,24 @@ class Transaction(object):
                                     signature: # signature of this transaction
                                 }
                     },
-            }
+                ]
 
             Transaction Output Structure:
-            {
-                   index: {
-                        address: # hashed public key of recipient,
-                        amount: # amount for this output
-                    },
-            }
-
-            Unspent Transaction Structure:
-            {
-                   id: {
-                        index: {
-                            address: 
-                            amount: 
+                [
+                       {
+                            address: # hashed public key of recipient,
+                            amount: # amount for this output
                         },
-                    },
-            }
+                ]
 
             Transaction structure:
-            {
                     id: {
                         input_count: # how many transaction inputs
                         inputs: # dict of transaction input objects
                         output_count: # how many transaction outputs
                         outputs: # dict of transaction output objects
-                    },
-            }      
+                    }
+
         """
 
         self.payload = kwargs.pop('payload', None)
@@ -75,53 +65,35 @@ class Transaction(object):
         else:  # creating new transaction
             self.transaction_id = None
             self.input_count = 0
-            self.inputs = {}
+            self.inputs = []
             self.output_count = 0
-            self.outputs = {}
+            self.outputs = []
             self.unused_amount = 0
 
     def add_output(self, address, amount):
         """
-        Add a new output to this transaction.
+        Add a new output and necessary inputs to this transaction.
         Get enough currency by referencing previous unspent transaction outputs
         :param address: the public key address recipient
         :param amount: the amount to send
         :return: True if the output was added, false otherwise
         """
+        hash_address = SHA256.new(address.encode('utf-8')).hexdigest()
 
-        success = False
-        # if we have leftover from previous output we use it
-        amount -= self.unused_amount  # subtract leftovers from previous outputs
-        self.unused_amount = 0  # reset unused amount
-        utxos, total = get_amount(amount)  # get inputs and their sum
+        if self.unused_amount >= amount:  # enough left over to cover output
+            self.unused_amount -= amount
+        elif self.unused_amount < amount:  # need to find more outputs
+            find_amount = amount - self.unused_amount
+            utxos, total = get_unspent_outputs(find_amount)
+            self.input_count += len(utxos)
+            self.inputs += utxos
+            self.unused_amount = total - find_amount
 
-        if total >= amount:
-            # add the unspent transaction output as an input
-            success = True
-            self.unused_amount = total - amount  # calculate leftovers
-
-            """
-            Need to talk about how we want to concat utxos 
-            I'm confused why Bitcoin has an index number for utxo
-            Also, im not sure why you are doing it this way; for the index number? 
-            
-            Also we need to distribute the change and leave room for fees
-            """
-            self.inputs.update(utxos)
-            self.input_count += list(utxos.keys()).count()
-
-            #self.inputs[self.input_count] = utxos  # add utxos as inputs
-            #self.input_count += 1
-
-            # create the new output
-            hash_address = SHA256.new(address.encode('utf-8')).hexdigest()
-            self.outputs[self.output_count] = {
-                "address": hash_address,
-                "amount": amount
-            }
-            self.output_count += 1
-
-        return success
+        self.output_count += 1
+        self.outputs.append({  # add new output
+            "address": hash_address,
+            "amount": amount
+        })
 
     def unlock_inputs(self, private_key, public_key):
         """
@@ -138,35 +110,37 @@ class Transaction(object):
         corresponding input at "unlock" where `public_key` is this node's
         full public key and `signature` is the signed transaction message.
         """
-        # before unlocking, make sure we have used up all input amounts
-        if self.unused_amount != 0:
-            # create the new output, giving leftovers to the sender
+
+        if self.unused_amount != 0:  # use up all input amounts (change)
             hash_address = SHA256.new(public_key.encode('utf-8')).hexdigest()
-            self.outputs[self.output_count] = {
+            self.outputs.append({
                 "address": hash_address,
                 "amount": self.unused_amount
-            }
+            })
             self.output_count += 1
             self.unused_amount = 0
 
         for tnx_input in self.inputs:  # for each input
-            utxo = find_utxo(tnx_input['transaction_id'],  # get unspent tnx
-                            tnx_input['output_index'])
-
-            transaction_message = SHA256.new((  # compose transaction message
-                str(tnx_input['transaction_id']) +  # input id
-                str(tnx_input['output_index']) +  # output index
-                str(utxo['address']) +  # hashed public key as address
-                str(self.outputs)
-            ).encode('utf-8'))
-            signer = DSS.new(private_key, 'fips-186-3')
-            signature = signer.sign(transaction_message)  # sign the message
-
-            unlock = {  # create unlocking portion of the transaction
-                "public_key": str(public_key),
-                "signature": str(signature)
-            }
-            tnx_input['unlock'] = unlock  # assign to input.
+            utxo = find_unspent_output(tnx_input['transaction_id'],
+                                       tnx_input['output_index'])
+            if utxo:
+                transaction_message = SHA256.new((  # compose message
+                    str(tnx_input['transaction_id']) +
+                    str(tnx_input['output_index']) +
+                    str(utxo['address']) +  # hashed public key address
+                    str(self.outputs)
+                ).encode('utf-8'))
+                signer = DSS.new(private_key, 'fips-186-3')
+                signature = signer.sign(transaction_message)
+                encoded = base64.b64encode(signature).decode()
+                unlock = {  # create unlocking portion of the transaction
+                    "public_key": str(public_key),
+                    "signature": encoded
+                }
+                tnx_input['unlock'] = unlock  # assign to input.
+            else:
+                # TODO: raise error
+                print("Invalid input found for {}".format(tnx_input))
 
     def verify(self):
         """
@@ -188,15 +162,13 @@ class Transaction(object):
         """
         authentic = False
         for tnx_input in self.inputs:  # for each referenced input
-            utxo = find_utxo(tnx_input['transaction_id'],  # get unspent tnx
-                             tnx_input['output_index'],
-                             use_block_chain=True)
+            utxo = find_unspent_output(tnx_input['transaction_id'],
+                                       tnx_input['output_index'])
 
             sig_key = SHA256.new(  # get this transaction's unlock public key
-                tnx_input['unlock']['public_key'].encode('utf-8')
+                tnx_input['unlock']['public_key'].encode()
             ).hexdigest()
 
-            # TODO: what if they are different public keys but same private key?
             if sig_key == utxo['address']:  # if this node is the recipient of
                 # the previous utxo
                 transaction_message = SHA256.new((  # transaction message
@@ -208,12 +180,14 @@ class Transaction(object):
 
                 ecc_key = import_public_key(tnx_input['unlock']['public_key'])
                 signature = tnx_input['unlock']['signature']
+                decoded = base64.b64decode(signature.encode())
                 verifier = DSS.new(ecc_key, 'fips-186-3')
                 try:
-                    verifier.verify(transaction_message, signature)
+                    verifier.verify(transaction_message, decoded)
                     authentic = True
                 except ValueError:
                     authentic = False
+        # TODO: raise error if false
         return authentic
 
     def get_transaction_id(self):
@@ -228,7 +202,7 @@ class Transaction(object):
             "outputs": self.outputs
         }
         txid = SHA256.new(
-            str(transaction).encode('utf-8')
+            str(transaction).encode()
         ).hexdigest()
         self.transaction_id = txid
         return txid
@@ -259,28 +233,28 @@ class Transaction(object):
         :return: 
         """
 
-        hashed_address = SHA256.new(public_key.encode('utf-8')).hexdigest()
+        hashed_address = SHA256.new(public_key.encode()).hexdigest()
         transaction = {
             "transaction_id": '',
             "input_count": 1,
-            "inputs": {
-                0: {
+            "inputs": [
+                {
                     "transaction_id": '',
                     "output_index": -1,
                     "unlock": {
                         "public_key": public_key,
-                        "signature": ''
+                        "signature": '',
                     }
                 }
-            },
+            ],
             "output_count": 1,
-            "outputs": {
-                0: {
+            "outputs": [
+                {
                     "address": hashed_address,
                     "amount": 7000
                 }
 
-            }
+            ]
         }
 
         # fill the unlock signature
@@ -288,13 +262,20 @@ class Transaction(object):
             str(transaction['inputs'][0]['transaction_id']) +  # input id
             str(transaction['inputs'][0]['output_index']) +  # output index
             str(hashed_address) +  # hashed public key as address
-            str(transaction['outputs'])# new outputs
-            ).encode('utf-8'))
+            str(transaction['outputs'])
+                                         # new outputs
+        ).encode())
         signer = DSS.new(private_key, 'fips-186-3')
-        signature = str(signer.sign(transaction_message))  # sign the message
-        transaction['inputs'][0]['unlock']['signature'] = signature
+        signature = signer.sign(transaction_message)  # sign the message
+        encoded = base64.b64encode(signature).decode()
+        transaction['inputs'][0]['unlock']['signature'] = encoded
 
         transaction_id = SHA256.new(
             str(transaction).encode('utf-8')).hexdigest()
         transaction['transaction_id'] = transaction_id
         return Transaction(payload=transaction)
+
+
+
+
+
