@@ -122,7 +122,8 @@ class Transaction(object):
 
         for tnx_input in self.inputs:  # for each input
             utxo = find_unspent_output(tnx_input['transaction_id'],
-                                       tnx_input['output_index'])
+                                       tnx_input['output_index'],
+                                       tnx_input['block_hash'])
             if utxo:
                 transaction_message = SHA256.new((  # compose message
                     str(tnx_input['transaction_id']) +
@@ -163,7 +164,8 @@ class Transaction(object):
         authentic = False
         for tnx_input in self.inputs:  # for each referenced input
             utxo = find_unspent_output(tnx_input['transaction_id'],
-                                       tnx_input['output_index'])
+                                       tnx_input['output_index'],
+                                       tnx_input['block_hash'])
 
             sig_key = SHA256.new(  # get this transaction's unlock public key
                 tnx_input['unlock']['public_key'].encode()
