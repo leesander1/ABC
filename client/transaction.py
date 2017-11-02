@@ -76,7 +76,7 @@ class Transaction(object):
         Get enough currency by referencing previous unspent transaction outputs
         :param address: the public key address recipient
         :param amount: the amount to send
-        :return: True if the output was added, false otherwise
+        :return: None
         """
         hash_address = SHA256.new(address.encode('utf-8')).hexdigest()
 
@@ -88,6 +88,21 @@ class Transaction(object):
             self.input_count += len(utxos)
             self.inputs += utxos
             self.unused_amount = total - find_amount
+
+        self.output_count += 1
+        self.outputs.append({  # add new output
+            "address": hash_address,
+            "amount": amount
+        })
+
+    def add_coinbase_output(self, address, amount):
+        """
+        Adds an output to an address without having to verify inputs
+        :param address: client's public key
+        :param amount: amount to send
+        :return: none
+        """
+        hash_address = SHA256.new(address.encode('utf-8')).hexdigest()
 
         self.output_count += 1
         self.outputs.append({  # add new output
@@ -213,12 +228,10 @@ class Transaction(object):
         """
         Get a dict representation of a transaction with the
         transaction id as the key
-        :return: a dict representation of the transaction object with the 
-                 transaction id as its key
+        :return: a dict representation of the transaction object.
+        This would typically be the value in a tx key-value
         """
-        txid = self.get_transaction_id()
         transaction = {
-            "transaction_id": txid,
             "input_count": self.input_count,
             "inputs": self.inputs,
             "output_count": self.output_count,

@@ -1,6 +1,8 @@
 """ core functionality """
 from block.block import Block, genesis_block
+from client.transaction import Transaction
 import cmd, sys, hashlib, json, os, codecs, copy
+
 
 def initialize():
     # initialize program on startup
@@ -24,6 +26,7 @@ def initialize():
 
     return conf
 
+
 def load_conf():
     # loads the config file
     try:
@@ -37,6 +40,7 @@ def load_conf():
         data = create_conf()
         print("not able to open conf file")
     return data
+
 
 def create_conf():
     # creates a new config
@@ -77,6 +81,7 @@ def create_conf():
         print('error creating conf')
     return parsed
 
+
 def save_conf(conf):
     obj = json.dumps(conf)
     parsed = json.loads(obj)
@@ -89,6 +94,7 @@ def save_conf(conf):
         print('error saving conf')
     return parsed
 
+
 def save_block(b):
     # saves the block
     try:
@@ -100,17 +106,20 @@ def save_block(b):
         print('error saving block')
     return
 
+
 def increment_height(conf):
     # updates the height of the chain in the conf
     conf["height"] += 1
     updated = save_conf(conf)
     return updated
 
+
 def update_previous_hash(conf, block_hash):
     # updates the height of the chain in the conf
     conf["last_block"] = block_hash
     updated = save_conf(conf)
     return updated
+
 
 def read_block(block_hash):
     # loads the block
@@ -124,14 +133,49 @@ def read_block(block_hash):
         # file does not exist or not able to read file
         print('{0}'.format(e))
 
-def bundle_tnx(cbtx):
+
+def bundle_tnx(size, cbtx):
     """
     pull some verified transactions
-    :return: tnx
+    :param size: the amount of transaction to return
+    :param cbtx: the coinbase transaction to add to the list of transactions
+    :return: dict of transactions
     """
-    # tnx = [cbtx, 'test7', 'test8', 'test9', 'test10']  # need to actually get real tnxs
-    tnx = ['test6', 'test7', 'test8', 'test9', 'test10', 'test11']  # need to actually get real tnxs
-    return tnx
+    cbx = create_coinbase_tx()
+    block_transactions = {cbx.get_transaction_id(): cbx.get_data()}
+
+    try:
+        with open('{0}/verified_transaction.json'.format(os.path.join(os.getcwd(), r'data'))) as file:
+            data = json.load(file)
+            file.close()
+
+            # TODO: bundle as many transactions as possible
+            tx_temp = []
+            tx_temp.append(data.popitem())
+            tx_temp.append(data.popitem())
+            block_transactions.update(tx_temp)
+
+            json.dump(data)
+            file.close()
+    except IOError as e:
+        # file does not exist or not able to read file
+        print('{0}'.format(e))
+    except KeyError as e:
+        # there was not at least 2 transactions in verified_transactions.json
+        print('Need at least 2 transaction per block\n{0}'.format(e))
+
+    return block_transactions
+
+def create_coinbase_tx():
+    """
+    Create a new transaction where the output is the client's public key
+    Will create a coinbase transaction
+    :return: new transaction following a coinbase protocol
+    """
+    cbtx = Transaction()
+    config = load_conf() # this is ugly btw
+    cbtx.add_coinbase_output(config["key"]["public"], 50)
+    return cbtx
 
 def mine(conf):
     # Mines blocks
