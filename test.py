@@ -1,9 +1,7 @@
 ''' Tests '''
-from block import Block
-import block
-from block.block import genesis_block
 # from client import core
 from client.core import initialize, save_conf
+from core.blocks import genesis_block
 
 conf = initialize()
 print(conf["height"])

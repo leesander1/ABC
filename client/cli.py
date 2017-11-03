@@ -1,8 +1,9 @@
 ''' The cmd line interface '''
-from block.block import Block, genesis_block
-from client.core import initialize, save_conf, read_block, mine
+from core.functions.functions import mine
+from core.blocks.block_io import read_block
+from core.configuration.configuration import Configuration
 from client.helpers import cromulon
-import cmd, sys, hashlib, json, signal
+import cmd, json
 
 
 class CLI(cmd.Cmd, object):
@@ -100,14 +101,15 @@ class CLI(cmd.Cmd, object):
         # 2) blockchain data
         # 3) peer data
         #
-        self.conf = initialize()
-        self.wallet = self.conf["wallet"]
-        self.peers = self.conf["peers"]
+        self.conf = Configuration()
+        self.wallet = self.conf.get_conf("wallet")
+        self.peers = self.conf.get_conf("peers")
         return
 
     def postloop(self):
         'Do stuff on end'
         # this is where we want to save all the data on exit
         # we should also save stuff on events
-        save_conf(self.conf)
+        conf = Configuration()
+        conf.save_conf()
         return
