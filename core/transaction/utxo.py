@@ -23,6 +23,7 @@ def get_unspent_outputs(amount):
         selected_utxos = {}
         utxo_sum = 0
 
+        # NOTE: This is random at the moment
         for key, value in utxos.items():
             if utxo_sum < amount:
                 selected_utxos[key] = value

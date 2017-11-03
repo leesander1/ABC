@@ -1,5 +1,5 @@
 ''' The cmd line interface '''
-from core.functions.functions import mine
+from core.functions.functions import mine, create_transaction, add_to_verifiedPool
 from core.blocks.block_io import read_block
 from core.configuration.configuration import Configuration
 from client.helpers import cromulon
@@ -21,7 +21,7 @@ class CLI(cmd.Cmd, object):
     def do_start(self, arg):
         'Starts mining process... we might want to mine in background?'
         # note wasn't able to figure out how to stop it...
-        mine(self.conf)
+        mine()
         return
 
     def do_stop(self, arg):
@@ -49,7 +49,7 @@ class CLI(cmd.Cmd, object):
 
     def do_info(self, arg):
         'Prints the info of the node, ie block height number of peers etc'
-        print(json.dumps(self.conf, indent=4, sort_keys=True))
+        print(json.dumps(self.conf.get_conf(), indent=4, sort_keys=True))
         return
 
     def do_block_info(self, arg):
@@ -60,7 +60,10 @@ class CLI(cmd.Cmd, object):
         return
 
     def do_send(self, arg):
-        'Send $'
+        # TODO: add exception handling for wrong input format
+        args = arg.split()
+        tx = create_transaction(args[0], int(args[1]))
+        add_to_verifiedPool(tx)
         return
 
     def do_showmewhatyougot(self, arg):

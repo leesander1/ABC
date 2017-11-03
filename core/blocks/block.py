@@ -58,7 +58,7 @@ class Block(object):
 
     def merkle_root(self, transactions):
         # calculates the merkle root and sets it as the blocks merkle_root
-        return findMerkleRoot(transactions)
+        return findMerkleRoot(list(transactions.keys()))
 
     def version(self, vers):
         # set the version

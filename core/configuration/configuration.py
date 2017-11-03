@@ -104,13 +104,16 @@ class Configuration(metaclass=Singleton):
         self.save_conf()
         return self.conf
 
-    def get_conf(self, key):
+    def get_conf(self, key=None):
         """
         returns the value for the matching key in the configuration
         :param key: key
         :return: value for the key
         """
         try:
-            return self.conf.get(key)
+            if key:
+                return self.conf.get(key)
+            else:
+                return self.conf
         except KeyError as e:
             print("Key was not found: {0}".format(e))

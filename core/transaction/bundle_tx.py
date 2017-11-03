@@ -5,18 +5,18 @@ import os
 from core.transaction.transaction import Transaction
 from core.configuration.configuration import Configuration
 
-def bundle_tnx(size, cbtx):
+def bundle_tnx(size, reward_amount):
     """
     pull some verified transactions
     :param size: the amount of transaction to return
     :param cbtx: the coinbase transaction to add to the list of transactions
     :return: dict of transactions
     """
-    cbx = create_coinbase_tx()
+    cbx = create_coinbase_tx(reward_amount)
     block_transactions = {cbx.get_transaction_id(): cbx.get_data()}
 
     try:
-        with open('{0}/verified_transaction.json'.format(os.path.join(os.getcwd(), r'data'))) as file:
+        with open('{0}/verified_transactions.json'.format(os.path.join(os.getcwd(), r'data')), 'r') as file:
             data = json.load(file)
             file.close()
 
@@ -25,8 +25,8 @@ def bundle_tnx(size, cbtx):
             tx_temp.append(data.popitem())
             tx_temp.append(data.popitem())
             block_transactions.update(tx_temp)
-
-            json.dump(data)
+        with open('{0}/verified_transactions.json'.format(os.path.join(os.getcwd(), r'data')), 'w') as file:
+            json.dump(data, file)
             file.close()
     except IOError as e:
         # file does not exist or not able to read file
@@ -37,7 +37,7 @@ def bundle_tnx(size, cbtx):
 
     return block_transactions
 
-def create_coinbase_tx():
+def create_coinbase_tx(reward_amount):
     """
     Create a new transaction where the output is the client's public key
     Will create a coinbase transaction
@@ -45,5 +45,5 @@ def create_coinbase_tx():
     """
     cbtx = Transaction()
     config = Configuration()
-    cbtx.add_coinbase_output(config.get_conf("key").get("public"), 50)
+    cbtx.add_coinbase_output(config.get_conf("key").get("public"), reward_amount)
     return cbtx
