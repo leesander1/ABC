@@ -6,6 +6,7 @@ import base64
 
 
 class Transaction(object):
+
     def __init__(self, **kwargs):
         """
         Instantiate a Transaction object from the network, a file, or by 
@@ -110,7 +111,6 @@ class Transaction(object):
         corresponding input at "unlock" where `public_key` is this node's
         full public key and `signature` is the signed transaction message.
         """
-
         if self.unused_amount != 0:  # use up all input amounts (change)
             hash_address = SHA256.new(public_key.encode('utf-8')).hexdigest()
             self.outputs.append({

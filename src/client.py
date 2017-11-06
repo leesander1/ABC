@@ -14,6 +14,7 @@ def create_transaction(rec_address, amount):
     transaction = Transaction()
     transaction.add_output(rec_address, amount)
     return transaction
+    # send_transaction(transaction)
 
 
 def send_transaction(transaction):
@@ -22,7 +23,9 @@ def send_transaction(transaction):
     :param transaction: the Transaction object
     :return: 
     """
-    transaction.unlock_inputs(keys.get_private_key(), keys.get_public_key())
+    public = keys.get_public_key()
+    private = keys.get_private_key()
+    transaction.unlock_inputs(private_key=private, public_key=public)
     transaction.verify()
     # TODO: actually send over network
     print("Sending Transaction: {}".format(transaction.get_data()))
