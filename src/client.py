@@ -14,23 +14,25 @@ def create_transaction(rec_address, amount):
     transaction = Transaction()
     transaction.add_output(rec_address, amount)
     return transaction
-    # send_transaction(transaction)
 
 
-def send_transaction(transaction):
+def send_transaction(rec_address, amount):
     """
     Send a transaction over the network
     :param transaction: the Transaction object
     :return: 
     """
-    public = keys.get_public_key()
-    private = keys.get_private_key()
-    transaction.unlock_inputs(private_key=private, public_key=public)
-    transaction.verify()
-    # TODO: actually send over network
-    print("Sending Transaction: {}".format(transaction.get_data()))
-    return transaction
-
+    transaction = Transaction()
+    try:
+        transaction.add_output(rec_address, amount)
+        public = keys.get_public_key()
+        private = keys.get_private_key()
+        transaction.unlock_inputs(private_key=private, public_key=public)
+        transaction.verify()
+        # TODO: actually send over network
+        print("Sending Transaction: {}".format(transaction.get_data()))
+    except ValueError as e:
+        print(e)
 
 def create_genesis():
     """

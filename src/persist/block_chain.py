@@ -145,10 +145,13 @@ def get_unspent_outputs(required_amount):
         payload.append({"transaction_id": tnx_id, "output_index": output_index})
         del json_transactions_list[i]
 
-    file = open(_PATH_UNSPENT_TNX, 'w')
-    # re-write remaining transactions
-    for tnx in json_transactions_list:
-        file.write("{}\n".format(tnx))
-    file.close()
+    if total >= required_amount:
 
-    return payload, total
+        file = open(_PATH_UNSPENT_TNX, 'w')
+        # re-write remaining transactions
+        for tnx in json_transactions_list:
+            file.write("{}\n".format(tnx))
+        file.close()
+        return payload, total
+    else:
+        raise ValueError("Insufficient Funds")
