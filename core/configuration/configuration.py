@@ -44,8 +44,7 @@ class Configuration(metaclass=Singleton):
 
     def create_conf(self):
         # creates a new config
-        pub_key = get_public_key()
-        priv_key = get_private_key()
+        pubkey = get_public_key("string")
 
         conf = {
             'height': 0,
@@ -53,12 +52,8 @@ class Configuration(metaclass=Singleton):
             'version': "00000001",
             'difficulty': 4,
             'reward': 100,
-            'key': {
-                'private': priv_key,
-                'public': pub_key,
-            },
             'wallet': {
-                'address': "my_address",
+                'address': pubkey,
                 'amount': 0
             },
             'peers': {

@@ -1,8 +1,14 @@
 import datetime as date
 import hashlib
 import json
+import base64
+
 
 from core.blocks.merkle import findMerkleRoot
+from Crypto.Hash import SHA256
+from Crypto.Signature import DSS
+from core.wallet.wallet import get_private_key, get_public_key
+from core.transaction.transaction import Transaction
 
 # define variables
 version = "00000001"  # version
@@ -161,12 +167,60 @@ class Block(object):
 
 def genesis_block():
     'Mines the genesis block. (Always the same block) 0000b7efc7281627c3a296475b8e142e8a280ea34c22718e6fb16d8aa7a9423e'
-    tnx = ['test1', 'test2', 'test3', 'test4', 'test5']
+    tnx = create_genesis_transaction(get_private_key(), get_public_key("string")).get_data()
     b = Block(previous_hash='0000000000000000000000000000000000000000000000000000000000000000', transactions=tnx)
     Block.target(b, 4)
     Block.genesis_timestamp(b)
     Block.mine(b)
     return b
 
-# if __name__ == '__main__':
-#     # do something
+def create_genesis_transaction(private_key, public_key):
+    """
+    Create the genesis transaction.
+    :param private_key:
+    :param public_key:
+    :return:
+    """
+
+    hashed_address = SHA256.new(public_key.encode()).hexdigest()
+    transaction = {
+        "transaction_id": '',
+        "input_count": 1,
+        "inputs": [
+            {
+                "transaction_id": '',
+                "output_index": -1,
+                "unlock": {
+                    "public_key": public_key,
+                    "signature": '',
+                }
+            }
+        ],
+        "output_count": 1,
+        "outputs": [
+            {
+                "address": hashed_address,
+                "amount": 7000
+            }
+
+        ]
+    }
+
+    # fill the unlock signature
+    transaction_message = SHA256.new((  # compose transaction message
+        str(transaction['inputs'][0]['transaction_id']) +  # input id
+        str(transaction['inputs'][0]['output_index']) +  # output index
+        str(hashed_address) +  # hashed public key as address
+        str(transaction['outputs'])
+        # new outputs
+    ).encode())
+    signer = DSS.new(private_key, 'fips-186-3')
+    signature = signer.sign(transaction_message)  # sign the message
+    encoded = base64.b64encode(signature).decode()
+    transaction['inputs'][0]['unlock']['signature'] = encoded
+
+    transaction_id = SHA256.new(
+        str(transaction).encode('utf-8')).hexdigest()
+    transaction['transaction_id'] = transaction_id
+    return Transaction(payload=transaction)
+

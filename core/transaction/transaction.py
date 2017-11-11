@@ -4,7 +4,7 @@ from Crypto.Hash import SHA256
 from Crypto.Signature import DSS
 
 from core.transaction.utxo import get_unspent_outputs, find_unspent_output
-from core.wallet.wallet import import_public_key
+from core.wallet.wallet import import_public_key, get_public_key, get_private_key
 
 
 class Transaction(object):
@@ -240,57 +240,6 @@ class Transaction(object):
             "outputs": self.outputs
         }
         return transaction
-
-    @staticmethod
-    def create_genesis_transaction(private_key, public_key):
-        """
-        Create the genesis transaction.
-        :param private_key: 
-        :param public_key: 
-        :return: 
-        """
-
-        hashed_address = SHA256.new(public_key.encode()).hexdigest()
-        transaction = {
-            "transaction_id": '',
-            "input_count": 1,
-            "inputs": [
-                {
-                    "transaction_id": '',
-                    "output_index": -1,
-                    "unlock": {
-                        "public_key": public_key,
-                        "signature": '',
-                    }
-                }
-            ],
-            "output_count": 1,
-            "outputs": [
-                {
-                    "address": hashed_address,
-                    "amount": 7000
-                }
-
-            ]
-        }
-
-        # fill the unlock signature
-        transaction_message = SHA256.new((  # compose transaction message
-            str(transaction['inputs'][0]['transaction_id']) +  # input id
-            str(transaction['inputs'][0]['output_index']) +  # output index
-            str(hashed_address) +  # hashed public key as address
-            str(transaction['outputs'])
-                                         # new outputs
-        ).encode())
-        signer = DSS.new(private_key, 'fips-186-3')
-        signature = signer.sign(transaction_message)  # sign the message
-        encoded = base64.b64encode(signature).decode()
-        transaction['inputs'][0]['unlock']['signature'] = encoded
-
-        transaction_id = SHA256.new(
-            str(transaction).encode('utf-8')).hexdigest()
-        transaction['transaction_id'] = transaction_id
-        return Transaction(payload=transaction)
 
 
 

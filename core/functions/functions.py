@@ -35,10 +35,13 @@ def create_transaction(recipient, amount):
     :param amount: the amount of abc to be sent
     :return: transaction
     """
-    tx = Transaction()
-    tx.add_output(recipient, amount)
+    try:
+        tx = Transaction()
+        tx.add_output(recipient, amount)
 
-    return tx
+        return tx
+    except ValueError as e:
+        print(e)
 
 def add_to_verifiedPool(tx):
     verified_tx = (tx.get_transaction_id(), tx.get_data())
@@ -47,18 +50,15 @@ def add_to_verifiedPool(tx):
             data = json.load(file)
             file.close()
             data.update([verified_tx])
-
-        # so that it overrides whatever is already in the verified_transactions.json
-        with open('{0}/verified_transactions.json'.format(os.path.join(os.getcwd(), r'data')), 'w') as file:
-            json.dump(data, file)
-            file.close()
-        return
     except IOError as e:
-        print('{0}'.format(e))
-    except ValueError:
-        # TODO: Im pretty sure there is a better way to detect whether or not the file exist and add a new tx
         with open('{0}/verified_transactions.json'.format(os.path.join(os.getcwd(), r'data')), 'w') as file:
             data = {}
             data.update([verified_tx])
             json.dump(data, file)
             file.close()
+
+    # so that it overrides whatever is already in the verified_transactions.json
+    with open('{0}/verified_transactions.json'.format(os.path.join(os.getcwd(), r'data')), 'w') as file:
+        json.dump(data, file)
+        file.close()
+

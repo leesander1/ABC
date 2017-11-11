@@ -15,9 +15,15 @@ def get_unspent_outputs(amount):
     """
 
     try:
-        with open('{0}/utxo.json'.format(os.path.join(os.getcwd(), r'data'))) as file:
-            data = json.load(file)
-            file.close()
+        try:
+            with open('{0}/utxo.json'.format(os.path.join(os.getcwd(), r'data'))) as file:
+                data = json.load(file)
+                file.close()
+        except IOError:
+            with open('{0}/utxo.json'.format(os.path.join(os.getcwd(), r'data')), 'w') as file:
+                data = {}
+                json.dump(data, file)
+                file.close()
 
         utxos = copy.deepcopy(data)
         selected_utxos = {}
@@ -37,7 +43,8 @@ def get_unspent_outputs(amount):
             with open('{0}/utxo.json'.format(os.path.join(os.getcwd(), r'data')), 'w') as file:
                 json.dump(data, file)
                 file.close()
-
+        else:
+            raise ValueError("you broke motha fucka")
         return selected_utxos, utxo_sum
     except IOError as e:
         # file does not exist or not able to read file
