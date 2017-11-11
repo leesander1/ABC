@@ -119,6 +119,26 @@ def find_unspent_output(transaction_id, output_index):
     return output
 
 
+def get_my_balance():
+    """
+    Get the total amount of unspent transaction outputs for this
+    node.
+    :return: int of balance
+    """
+    ensure_data_dir()
+    file = open(_PATH_UNSPENT_TNX, 'r')
+    json_transactions_list = [json.loads(x) for x in file.readlines()]
+    file.close()
+
+    total = 0
+    i = 0
+    # Iterate through each item until we have enough
+    for transaction in json_transactions_list:
+        amount = transaction['amount']
+        total += int(amount)
+    return total
+
+
 def get_unspent_outputs(required_amount):
     """
     Gather unspent transaction outputs from this node's file for fulfilling

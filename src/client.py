@@ -4,18 +4,6 @@ from block import Block
 from transaction import Transaction
 
 
-def create_transaction(rec_address, amount):
-    """
-    Initialize a Transaction object with a receiving address and amount
-    :param rec_address: the recipient address
-    :param amount: the amount to the recipient
-    :return: the new Transaction object
-    """
-    transaction = Transaction()
-    transaction.add_output(rec_address, amount)
-    return transaction
-
-
 def send_transaction(rec_address, amount):
     """
     Send a transaction over the network
@@ -33,6 +21,11 @@ def send_transaction(rec_address, amount):
         print("Sending Transaction: {}".format(transaction.get_data()))
     except ValueError as e:
         print(e)
+
+
+def get_balance():
+    return block_chain.get_my_balance()
+
 
 def create_genesis():
     """

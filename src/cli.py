@@ -19,6 +19,9 @@ class CLI(cmd.Cmd, object):
         args = arg.split()
         tx = client.send_transaction(args[0], int(args[1]))
 
+    def do_balance(self, arg):
+        print(client.get_balance())
+
     def onecmd(self, line):
         """
         define $ as a shortcut for the mine command. x for exit
