@@ -102,6 +102,10 @@ class Configuration(metaclass=Singleton):
         self.save_conf()
         return self.conf
 
+    def add_to_wallet(self, amount):
+        self.conf["wallet"] = self.conf["wallet"] + amount
+        self.save_conf()
+
     def get_conf(self, key=None):
         """
         returns the value for the matching key in the configuration
