@@ -64,3 +64,13 @@ def add_to_verifiedPool(tx):
         json.dump(data, file)
         file.close()
 
+def get_trans():
+        with open('{0}/verified_transactions.json'.format(os.path.join(os.getcwd(), r'data')), 'r') as file:
+            data = json.load(file)
+            data_tuple = data.popitem()
+            payload = data_tuple[1]
+            payload.update({"transaction_id": data_tuple[0]})
+            tnx = Transaction(payload=payload)
+
+        return tnx
+

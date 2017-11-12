@@ -1,5 +1,5 @@
 ''' The cmd line interface '''
-from core.functions.functions import mine, create_transaction, add_to_verifiedPool
+from core.functions.functions import mine, create_transaction, add_to_verifiedPool, get_trans
 from core.blocks.block_io import read_block
 from core.configuration.configuration import Configuration
 from client.helpers import cromulon
@@ -119,3 +119,8 @@ class CLI(cmd.Cmd, object):
         conf = Configuration()
         conf.save_conf()
         return
+
+    def do_test_verify(self, args):
+        test_tnx = get_trans()
+
+        print(test_tnx.verify())
