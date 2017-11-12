@@ -61,9 +61,12 @@ class CLI(cmd.Cmd, object):
 
     def do_send(self, arg):
         # TODO: add exception handling for wrong input format
-        args = arg.split()
-        tx = create_transaction(args[0], int(args[1]))
-        add_to_verifiedPool(tx)
+        try:
+            args = arg.split()
+            tx = create_transaction(args[0], int(args[1]))
+            add_to_verifiedPool(tx)
+        except ValueError as e:
+            print(e)
         return
 
     def do_showmewhatyougot(self, arg):

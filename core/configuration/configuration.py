@@ -1,6 +1,8 @@
 """ Singleton used to access client config """
 import os, json
 
+from Crypto.Hash import SHA256
+
 from core.configuration.singleton import Singleton
 from core.blocks.block_io import save_block, read_block
 from core.blocks.block import Block, genesis_block
@@ -45,6 +47,7 @@ class Configuration(metaclass=Singleton):
     def create_conf(self):
         # creates a new config
         pubkey = get_public_key("string")
+        hashed_address = SHA256.new(pubkey.encode()).hexdigest()
 
         conf = {
             'height': 0,
@@ -53,7 +56,7 @@ class Configuration(metaclass=Singleton):
             'difficulty': 4,
             'reward': 100,
             'wallet': {
-                'address': pubkey,
+                'address': hashed_address,
                 'amount': 0
             },
             'peers': {

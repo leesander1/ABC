@@ -41,11 +41,11 @@ def create_transaction(recipient, amount):
 
         return tx
     except ValueError as e:
-        print(e)
+        raise ValueError("INSUFFICIENT FUNDS")
 
 def add_to_verifiedPool(tx):
-    verified_tx = (tx.get_transaction_id(), tx.get_data())
     try:
+        verified_tx = (tx.get_transaction_id(), tx.get_data())
         with open('{0}/verified_transactions.json'.format(os.path.join(os.getcwd(), r'data')), 'r') as file:
             data = json.load(file)
             file.close()
