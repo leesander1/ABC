@@ -152,7 +152,7 @@ class Transaction(object):
                 signature = signer.sign(transaction_message)
                 encoded = base64.b64encode(signature).decode()
                 unlock = {  # create unlocking portion of the transaction
-                    "public_key": str(public_key),
+                    "public_key": hash_address,
                     "signature": encoded
                 }
                 tnx_input['unlock'] = unlock  # assign to input.

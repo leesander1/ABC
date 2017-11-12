@@ -186,7 +186,6 @@ def create_genesis_transaction(private_key, public_key):
 
     hashed_address = SHA256.new(public_key.encode()).hexdigest()
     transaction = {
-        "transaction_id": '',
         "input_count": 1,
         "inputs": [
             {
