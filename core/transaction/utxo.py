@@ -1,7 +1,6 @@
 import copy
 import json
 import os
-from core.configuration.configuration import Configuration
 
 _PATH_UNSPENT_TNX = os.path.normpath('../data/utxo.json')
 
@@ -96,8 +95,7 @@ def add_utxo(transaction_id, output_index, block_hash, amount):
         "index": output_index,
         "block": block_hash
     }}
-    conf = Configuration()
-    conf.add_to_wallet(amount)
+
     try:
         with open('{0}/utxo.json'.format(os.path.join(os.getcwd(), r'data')), 'r+') as file:
             data = json.load(file)
