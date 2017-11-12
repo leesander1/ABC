@@ -6,6 +6,7 @@ from core.transaction.transaction import Transaction
 from core.transaction.bundle_tx import bundle_tnx
 from core.blocks.block_io import save_block
 from core.configuration.configuration import Configuration
+from core.wallet.wallet import get_public_key, get_private_key
 
 def mine():
     # config object
@@ -38,6 +39,7 @@ def create_transaction(recipient, amount):
     try:
         tx = Transaction()
         tx.add_output(recipient, amount)
+        tx.unlock_inputs(get_private_key(), get_public_key("string"))
 
         return tx
     except ValueError as e:

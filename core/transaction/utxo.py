@@ -26,15 +26,18 @@ def get_unspent_outputs(amount):
                 file.close()
 
         utxos = copy.deepcopy(data)
-        selected_utxos = {}
+        selected_utxos = []
         utxo_sum = 0
 
         # NOTE: This is random at the moment
         for key, value in utxos.items():
             if utxo_sum < amount:
-                selected_utxos[key] = value
+                selected_utxos.append({
+                    "transaction_id": key,
+                    "output_index": value["index"],
+                    "block_hash": value["block"]})
                 data.pop(key)
-                utxo_sum = utxo_sum + value['amount']
+                utxo_sum = utxo_sum + value["amount"]
             else:
                 break
 

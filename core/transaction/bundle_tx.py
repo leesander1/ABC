@@ -23,7 +23,6 @@ def bundle_tnx(size, reward_amount):
             data = json.load(file)
             file.close()
     except IOError:
-        print("~~~~~~~~~~~~~~~~")
         with open('{0}/verified_transactions.json'.format(os.path.join(os.getcwd(), r'data')), 'w') as file:
             data = {}
             json.dump(data, file)
@@ -53,5 +52,5 @@ def create_coinbase_tx(reward_amount):
     """
     cbtx = Transaction()
     config = Configuration()
-    cbtx.add_coinbase_output(SHA256.new(get_public_key("string").encode()).hexdigest(), reward_amount)
+    cbtx.add_coinbase_output(get_public_key("string"), reward_amount)
     return cbtx
