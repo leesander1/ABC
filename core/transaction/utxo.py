@@ -91,7 +91,7 @@ def find_unspent_output(transaction_id, output_index, block_hash):
 
 def add_utxo(transaction_id, output_index, block_hash, amount):
     try:
-        with open('{0}/utxo.json'.format(os.path.join(os.getcwd(), r'data'))) as file:
+        with open('{0}/utxo.json'.format(os.path.join(os.getcwd(), r'data')), 'r+') as file:
             data = json.load(file)
     except IOError:
         with open('{0}/utxo.json'.format(os.path.join(os.getcwd(), r'data')), 'w') as file:
