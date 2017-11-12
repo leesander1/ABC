@@ -167,8 +167,10 @@ class Block(object):
 
 def genesis_block():
     'Mines the genesis block. (Always the same block) 0000b7efc7281627c3a296475b8e142e8a280ea34c22718e6fb16d8aa7a9423e'
-    tnx_id, tnx_paylod = create_genesis_transaction(get_private_key(), get_public_key("string"))
-    b = Block(previous_hash='0000000000000000000000000000000000000000000000000000000000000000', transactions={tnx_id: tnx_paylod.get_data()})
+    tnx = create_genesis_transaction(get_private_key(), get_public_key("string"))
+    tnx_id = tnx.get_transaction_id()
+    tnx_payload = tnx.get_data()
+    b = Block(previous_hash='0000000000000000000000000000000000000000000000000000000000000000', transactions={tnx_id: tnx_payload})
     Block.target(b, 4)
     Block.genesis_timestamp(b)
     Block.mine(b)
@@ -222,7 +224,7 @@ def create_genesis_transaction(private_key, public_key):
     transaction_id = SHA256.new(
         str(transaction).encode('utf-8')).hexdigest()
     transaction['transaction_id'] = transaction_id
-    return Transaction.get_transaction_id(), Transaction(payload=transaction)
+    return Transaction(payload=transaction)
 
 
 
