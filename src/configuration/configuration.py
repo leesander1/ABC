@@ -1,12 +1,14 @@
 """ Singleton used to access client config """
-import os, json
+import json
+import os
 
 from Crypto.Hash import SHA256
+from src.persist import save_block
 
-from core.configuration.singleton import Singleton
-from core.blocks.block_io import save_block, read_block
-from core.blocks.block import Block, genesis_block
-from core.wallet.wallet import get_private_key, get_public_key
+from src.block.block import genesis_block
+from src.configuration.singleton import Singleton
+from src.wallet import get_public_key
+
 
 class Configuration(metaclass=Singleton):
     def __init__(self):
@@ -19,7 +21,7 @@ class Configuration(metaclass=Singleton):
         if self.conf["height"] == 0:
             # we need to save the genesis block
             b = genesis_block()
-            # create a new folder dir for blocks
+            # create a new folder dir for block
             cwd = os.getcwd()
             try:
                 os.makedirs(os.path.join(cwd, r'data'))

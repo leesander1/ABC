@@ -92,7 +92,7 @@ def find_unspent_output(transaction_id, output_index, block_hash):
         # error finding utxo
         print('Transaction not found\nTXID:{0}'.format(e))
 
-def add_utxo(transaction_id, output_index, block_hash, amount):
+def save_utxo(transaction_id, output_index, block_hash, amount):
     new_utxo = {"{0}".format(transaction_id): {
         "amount": amount,
         "index": output_index,

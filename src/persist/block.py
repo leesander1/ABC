@@ -1,7 +1,9 @@
 """ Getting and Putting blocks into json files """
-import os, json
-from core.transaction.utxo import add_utxo
-from core.transaction.transaction import Transaction
+import json
+import os
+from src.transaction import Transaction
+from src.persist.utxo import save_utxo
+
 
 def read_block(block_hash):
     # loads the block
@@ -22,7 +24,7 @@ def save_block(b):
             json.dump(b.info(), file, indent=4, sort_keys=True)
             file.close()
 
-        # TODO: A func will be written to add utxos to user when verifying blocks. This will be deprecated then.
+        # TODO: A func will be written to add utxos to user when verifying block. This part will be deprecated then.
         info = b.info()
         header = info["header"]
 
@@ -33,7 +35,7 @@ def save_block(b):
 
         # genesis block
         if header["parent"] == "0000000000000000000000000000000000000000000000000000000000000000":
-            add_utxo(tnx.get_transaction_id(), -1, info["block"], 7000)
+            save_utxo(tnx.get_transaction_id(), -1, info["block"], 7000)
 
     except IOError as e:
         print('error saving block')

@@ -2,11 +2,10 @@
 import json
 import os
 
-from Crypto.Hash import SHA256
+from src.configuration import Configuration
+from src.transaction import Transaction
+from src.wallet import get_public_key
 
-from core.transaction.transaction import Transaction
-from core.configuration.configuration import Configuration
-from core.wallet.wallet import get_private_key, get_public_key
 
 def bundle_tnx(size, reward_amount):
     """

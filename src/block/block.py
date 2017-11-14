@@ -1,14 +1,14 @@
+import base64
 import datetime as date
 import hashlib
 import json
-import base64
 
-
-from core.blocks.merkle import findMerkleRoot
 from Crypto.Hash import SHA256
 from Crypto.Signature import DSS
-from core.wallet.wallet import get_private_key, get_public_key
-from core.transaction.transaction import Transaction
+
+from src.block.merkle import findMerkleRoot
+from src.transaction import Transaction
+from src.wallet import get_private_key, get_public_key
 
 # define variables
 version = "00000001"  # version
@@ -63,7 +63,7 @@ class Block(object):
         self.timestamp = str("2017-10-08 13:18:06.810644").encode('utf8')
 
     def merkle_root(self, transactions):
-        # calculates the merkle root and sets it as the blocks merkle_root
+        # calculates the merkle root and sets it as the block merkle_root
         return findMerkleRoot(list(transactions.keys()))
 
     def version(self, vers):

@@ -3,8 +3,8 @@ import base64
 from Crypto.Hash import SHA256
 from Crypto.Signature import DSS
 
-from core.transaction.utxo import get_unspent_outputs, find_unspent_output
-from core.wallet.wallet import import_public_key, get_public_key, get_private_key
+from src.persist import get_unspent_outputs, find_unspent_output
+from src.wallet import import_public_key
 
 
 class Transaction(object):
