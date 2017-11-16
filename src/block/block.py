@@ -9,6 +9,7 @@ from Crypto.Signature import DSS
 from src.block.merkle import findMerkleRoot
 from src.transaction import Transaction
 from src.wallet import get_private_key, get_public_key
+from src.persist import save_utxo
 
 # define variables
 version = "00000001"  # version
@@ -122,7 +123,6 @@ class Block(object):
         m.update(str(self.target).encode('utf-8'))
         return hashlib.sha256(m.hexdigest().encode('utf-8')).hexdigest()
 
-
     def verify_hash(self, block_hash):
         # verifies the hash is valid by checking if it matches the criteria target difficulty
         # 1) check if hash matches target difficulty
@@ -149,7 +149,6 @@ class Block(object):
             else:  # was not correct a valid hash
                 # increment the nonce_try
                 nonce_try += 1
-
 
     def reset_nonce(self):
         # reset the nonce, should be reset after each block

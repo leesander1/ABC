@@ -161,6 +161,7 @@ class Transaction(object):
                 print("Invalid input found for {}".format(tnx_input))
 
     def verify(self):
+        # TODO: Maybe rename this function to authenticate
         """
         Verify an incoming transaction.
             1) SHA256 hash the unspent transaction object's address
@@ -240,8 +241,3 @@ class Transaction(object):
             "outputs": self.outputs
         }
         return transaction
-
-
-
-
-

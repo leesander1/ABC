@@ -2,7 +2,8 @@
 import json
 import os
 
-from src.persist import save_block, save_unverified_transaction, save_verified_transaction, read_block
+from Crypto.Hash import SHA256
+from src.persist import save_block, save_unverified_transaction, save_verified_transaction, read_block, save_utxo
 from src.block.block import Block
 from src.configuration import Configuration
 from src.transaction import Transaction, bundle_tnx
@@ -59,4 +60,22 @@ def init_configuration():
     This will instantiate the config class
     :return: configuration object
     """
+
+    # TODO: Genesis block should be created here
+    # TODO: Then call finc_incoming_utxos
     return Configuration()
+
+def find_incoming_utxos(block_hash, transactions):
+    """
+    Iterates through all the outputs and looks for any directed to user's wallet.
+    If found, save to the utxo pool
+    :return:
+    """
+    myAddress = SHA256.new(get_public_key("string").encode()).hexdigest()
+
+    for tnx in transactions:
+        for index in range(len(tnx.outputs)):
+            if tnx.outputs[index]["address"] == myAddress and len(tnx.inputs) > 0:
+                save_utxo(tnx.get_transaction_id(), index, block_hash, tnx.outputs[index]["amount"])
+            elif tnx.outputs[index]["address"] == myAddress and len(tnx.inputs) == 0:
+                save_utxo(tnx.get_transaction_id(), -1, block_hash, tnx.outputs[index]["amount"])
