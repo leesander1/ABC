@@ -4,7 +4,7 @@ from Crypto.Hash import SHA256
 from Crypto.Signature import DSS
 
 from src.persist import get_unspent_outputs, find_unspent_output
-from src.wallet import import_public_key
+from src.wallet import import_public_key, get_public_key
 
 
 class Transaction(object):
@@ -127,7 +127,6 @@ class Transaction(object):
         corresponding input at "unlock" where `public_key` is this node's
         full public key and `signature` is the signed transaction message.
         """
-
         if self.unused_amount != 0:  # use up all input amounts (change)
             hash_address = SHA256.new(public_key.encode('utf-8')).hexdigest()
             self.outputs.append({
@@ -241,3 +240,16 @@ class Transaction(object):
             "outputs": self.outputs
         }
         return transaction
+
+
+def create_coinbase_tx(reward_amount):
+    """
+    Create a new transaction where the output is the client's public key
+    Will create a coinbase transaction
+    :return: new transaction following a coinbase protocol
+    """
+    cbtx = Transaction()
+
+    hashed_address = SHA256.new(get_public_key("string").encode()).hexdigest()
+    cbtx.add_coinbase_output(hashed_address, reward_amount)
+    return cbtx

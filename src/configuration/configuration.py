@@ -3,9 +3,6 @@ import json
 import os
 
 from Crypto.Hash import SHA256
-from src.persist import save_block
-
-from src.block.block import genesis_block
 from src.configuration.singleton import Singleton
 from src.wallet import get_public_key
 
@@ -15,22 +12,9 @@ class Configuration(metaclass=Singleton):
         """
         1) check to see if conf appdata exists
         2) if it does load it up then begin sync ( connect, get updates, etc )
-        3) if not, create new public key/wallet, files, mine genesis block, connect to some seed peers, sync
+        3) if not, create new public key/wallet, files, connect to some seed peers, sync
         """
         self.conf = self.load_conf()
-        if self.conf["height"] == 0:
-            # we need to save the genesis block
-            b = genesis_block()
-            # create a new folder dir for block
-            cwd = os.getcwd()
-            try:
-                os.makedirs(os.path.join(cwd, r'data'))
-            except OSError as e:
-                # folder exists or error
-                # print('error {0}'.format(e))
-                pass
-            save_block(b)
-            self.increment_height()
 
     def load_conf(self):
         # loads the config file
@@ -53,7 +37,7 @@ class Configuration(metaclass=Singleton):
 
         conf = {
             'height': 0,
-            'last_block': "0000b7efc7281627c3a296475b8e142e8a280ea34c22718e6fb16d8aa7a9423e",
+            'last_block': "0000fefed401235a109a448231ab71ff708b94270be94a855bd51220a94ad940",
             'version': "00000001",
             'difficulty': 4,
             'reward': 100,

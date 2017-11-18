@@ -12,13 +12,13 @@ def save_verified_transaction(tnx_id, tnx_data):
     try:
         with open('{0}/verified_transactions.json'.format(os.path.join(os.getcwd(), r'data')), 'r+') as file:
             data = json.load(file)
-            data.update([verified_tnx])
+            data.update(verified_tnx)
             json.dump(data, file)
             file.close()
     except IOError as e:
         with open('{0}/verified_transactions.json'.format(os.path.join(os.getcwd(), r'data')), 'w') as file:
             data = {}
-            data.update([verified_tnx])
+            data.update(verified_tnx)
             json.dump(data, file)
             file.close()
 

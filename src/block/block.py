@@ -2,14 +2,14 @@ import base64
 import datetime as date
 import hashlib
 import json
+import os
 
 from Crypto.Hash import SHA256
 from Crypto.Signature import DSS
 
 from src.block.merkle import findMerkleRoot
-from src.transaction import Transaction
+from src.transaction import Transaction, create_coinbase_tx
 from src.wallet import get_private_key, get_public_key
-from src.persist import save_utxo
 
 # define variables
 version = "00000001"  # version
@@ -165,7 +165,7 @@ class Block(object):
 
 
 def genesis_block():
-    'Mines the genesis block. (Always the same block) 0000b7efc7281627c3a296475b8e142e8a280ea34c22718e6fb16d8aa7a9423e'
+    'Mines the genesis block. (Always the same block)'
     tnx = create_genesis_transaction(get_private_key(), get_public_key("string"))
     tnx_id = tnx.get_transaction_id()
     tnx_payload = tnx.get_data()
@@ -183,7 +183,7 @@ def create_genesis_transaction(private_key, public_key):
     :return:
     """
 
-    hashed_address = SHA256.new(public_key.encode()).hexdigest()
+    hashed_address = SHA256.new(public_key.encode('utf-8')).hexdigest()
     transaction = {
         "input_count": 1,
         "inputs": [
@@ -223,6 +223,41 @@ def create_genesis_transaction(private_key, public_key):
         str(transaction).encode('utf-8')).hexdigest()
     transaction['transaction_id'] = transaction_id
     return Transaction(payload=transaction)
+
+def bundle_tnx(size, reward_amount):
+    """
+    pull some verified transactions
+    :param size: the amount of transaction to return
+    :param cbtx: the coinbase transaction to add to the list of transactions
+    :return: dict of transactions
+    """
+    cbx = create_coinbase_tx(reward_amount)
+    block_transactions = {cbx.get_transaction_id(): cbx.get_data()}
+
+    try:
+        with open('{0}/verified_transactions.json'.format(os.path.join(os.getcwd(), r'data')), 'r') as file:
+            data = json.load(file)
+            file.close()
+    except IOError:
+        with open('{0}/verified_transactions.json'.format(os.path.join(os.getcwd(), r'data')), 'w') as file:
+            data = {}
+            json.dump(data, file)
+            file.close()
+
+    try:  # TODO: bundle as many transactions as possible
+        tx_temp = []
+        tx_temp.append(data.popitem())
+        #tx_temp.append(data.popitem())
+        block_transactions.update(tx_temp)
+
+        with open('{0}/verified_transactions.json'.format(os.path.join(os.getcwd(), r'data')), 'w') as file:
+            json.dump(data, file)
+            file.close()
+    except KeyError as e:
+        # there was not at least 2 transactions in verified_transactions.json
+        print('Need at least 1 transaction per block')
+
+    return block_transactions
 
 
 

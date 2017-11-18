@@ -1,2 +1,1 @@
-from src.transaction.bundle_tx import bundle_tnx
-from src.transaction.transaction import Transaction
+from src.transaction.transaction import Transaction, create_coinbase_tx
