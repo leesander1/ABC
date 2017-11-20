@@ -6,7 +6,7 @@ from Crypto.Hash import SHA256
 from src.wallet import get_public_key
 
 # private path
-_CONFIGURATION_PATH = os.path.normpath('../data/abc.json')
+_CONFIGURATION_PATH = '{0}/abc.json'.format(os.path.join(os.getcwd(),  r'data'))
 
 
 class Singleton(type):
