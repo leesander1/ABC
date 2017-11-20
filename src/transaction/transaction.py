@@ -178,7 +178,7 @@ class Transaction(object):
 
         :return: True if the transaction is valid, false otherwise
         """
-        authentic = False
+        authentic = True
         for tnx_input in self.inputs:  # for each referenced input
             utxo = find_unspent_output(tnx_input['transaction_id'],
                                        tnx_input['output_index'],
@@ -203,10 +203,10 @@ class Transaction(object):
                 verifier = DSS.new(ecc_key, 'fips-186-3')
                 try:
                     verifier.verify(transaction_message, decoded)
-                    authentic = True
                 except ValueError:
                     authentic = False
-        # TODO: raise error if false
+                    break
+
         return authentic
 
     def get_transaction_id(self):
@@ -214,12 +214,7 @@ class Transaction(object):
         Calculate the transaction id. 
         :return: the transaction id of this transaction
         """
-        transaction = {
-            "input_count": self.input_count,
-            "inputs": self.inputs,
-            "output_count": self.output_count,
-            "outputs": self.outputs
-        }
+        transaction = self.get_data()
         txid = SHA256.new(
             str(transaction).encode()
         ).hexdigest()
