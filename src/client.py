@@ -21,6 +21,7 @@ def send_transaction(rec_address, amount):
         print("Sending Transaction: {}".format(transaction.get_data()))
     except ValueError as e:
         print(e)
+    return transaction
 
 
 def get_balance():
@@ -36,6 +37,7 @@ def create_genesis():
     genesis_transaction = Transaction.create_genesis_transaction(keys.get_private_key(),
                                                         keys.get_public_key())
     data = [genesis_transaction.get_data()]
-    block = Block(index=0, data=data, previous_hash="0")
-    block_chain.write_block(block)
+    block = Block(index=0, transactions=data, previous_hash="0")
+    block_chain.write_genesis_block(block)
+    block_chain.write_unspent_outputs(block, keys.get_public_key())
     return block

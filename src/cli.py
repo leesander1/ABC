@@ -2,6 +2,7 @@
 
 import cmd
 from src import client
+import os
 
 
 class CLI(cmd.Cmd, object):
@@ -51,12 +52,13 @@ class CLI(cmd.Cmd, object):
         # 2) blockchain data
         # 3) peer data
         #
+        data_dir = os.path.normpath('../data/')
+        if not os.path.isdir(data_dir):  # check for existence
+            os.mkdir(data_dir)  # create
         client.create_genesis()
-        return
 
     def postloop(self):
         'Do stuff on end'
         # this is where we want to save all the data on exit
         # we should also save stuff on events
-
-        return
+        pass

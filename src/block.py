@@ -36,12 +36,12 @@ class Block(object):
             self.index = self.payload['index']
             self.previous_hash = self.payload['previous_hash']
             self.timestamp = self.payload['timestamp']
-            self.data = self.payload['data']
+            self.transactions = self.payload['transactions']
             self.hash = self.payload['hash']
         else:  # creating new block
             self.index = kwargs.pop('index')
             self.previous_hash = kwargs.pop('previous_hash')
-            self.data = kwargs.pop('data')
+            self.transactions = kwargs.pop('transactions')
             self.timestamp = None  # set timestamp when POW solved
             self.hash = None  # hash_block() when POW is solved
             self.mine_block()
@@ -53,7 +53,7 @@ class Block(object):
         """
         payload = str(self.index) + \
                   str(self.timestamp) + \
-                  str(self.data) + \
+                  str(self.transactions) + \
                   str(self.previous_hash)
         block_hash = SHA256.new(payload.encode('utf-8'))
         return block_hash.hexdigest()
@@ -74,7 +74,7 @@ class Block(object):
         :return: a nested python dictionary containing all transactions in this
                  block
         """
-        return self.data
+        return self.transactions
 
     def get_hash(self):
         """
@@ -90,17 +90,17 @@ class Block(object):
         """
         return self.previous_hash
 
-    def get_next_block(self, data):
+    def get_next_block(self, transactions):
         """
         Create a new block based off of self.
-        :param data: a nested python dictionary containing all transactions
+        :param transactions: a nested python dictionary containing all transactions
                     for the new block
         :return: the newly created block
         """
         new_idx = self.index + 1
-        new_data = data
+        new_data = transactions
         new_prev_hash = self.hash
-        return Block(index=new_idx, data=new_data, previous_hash=new_prev_hash)
+        return Block(index=new_idx, transactions=new_data, previous_hash=new_prev_hash)
 
     def get_data(self):
         """
@@ -110,7 +110,7 @@ class Block(object):
         return {
             "index": self.index,
             "timestamp": str(self.timestamp),
-            "data": self.data,  # should be a transaction as a dict
+            "transactions": self.transactions,  # should be a transaction as a dict
             "hash": self.hash,
             "previous_hash": self.previous_hash
         }
