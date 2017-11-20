@@ -2,7 +2,8 @@ import copy
 import json
 import os
 
-_PATH_UNSPENT_TNX = os.path.normpath('../data/utxo.json')
+_PATH_UNSPENT_TNX = '{0}/utxo.json'.format(os.path.join(os.getcwd(), r'data'))
+
 
 def get_unspent_outputs(amount):
     """
@@ -15,43 +16,39 @@ def get_unspent_outputs(amount):
     """
 
     try:
-        try:
-            with open('{0}/utxo.json'.format(os.path.join(os.getcwd(), r'data'))) as file:
-                data = json.load(file)
-                file.close()
-        except IOError:
-            with open('{0}/utxo.json'.format(os.path.join(os.getcwd(), r'data')), 'w') as file:
-                data = {}
-                json.dump(data, file)
-                file.close()
+        with open(_PATH_UNSPENT_TNX) as file:
+            data = json.load(file)
+            file.close()
+    except IOError:
+        with open(_PATH_UNSPENT_TNX, 'w') as file:
+            data = {}
+            json.dump(data, file)
+            file.close()
 
-        utxos = copy.deepcopy(data)
-        selected_utxos = []
-        utxo_sum = 0
+    utxos = copy.deepcopy(data)
+    selected_utxos = []
+    utxo_sum = 0
 
-        # NOTE: This is random at the moment
-        for key, value in utxos.items():
-            if utxo_sum < amount:
-                selected_utxos.append({
-                    "transaction_id": key,
-                    "output_index": value["index"],
-                    "block_hash": value["block"]})
-                data.pop(key)
-                utxo_sum = utxo_sum + value["amount"]
-            else:
-                break
-
-        if utxo_sum >= amount:
-            # if there was sufficient funds, remove them from the utxo file
-            with open('{0}/utxo.json'.format(os.path.join(os.getcwd(), r'data')), 'w') as file:
-                json.dump(data, file)
-                file.close()
+    # NOTE: This is random at the moment
+    for key, value in utxos.items():
+        if utxo_sum < amount:
+            selected_utxos.append({
+                "transaction_id": key,
+                "output_index": value["index"],
+                "block_hash": value["block"]})
+            data.pop(key)
+            utxo_sum = utxo_sum + value["amount"]
         else:
-            raise ValueError("you broke motha fucka")
-        return selected_utxos, utxo_sum
-    except IOError as e:
-        # file does not exist or not able to read file
-        print('{0}'.format(e))
+            break
+
+    if utxo_sum >= amount:
+        # if there was sufficient funds, remove them from the utxo file
+        with open('{0}/utxo.json'.format(os.path.join(os.getcwd(), r'data')), 'w') as file:
+            json.dump(data, file)
+            file.close()
+    else:
+        raise ValueError("Insufficient funds")
+    return selected_utxos, utxo_sum
 
 
 def find_unspent_output(transaction_id, output_index, block_hash):
@@ -87,7 +84,7 @@ def find_unspent_output(transaction_id, output_index, block_hash):
         return output
     except IOError as e:
         # file does not exist or not able to read file
-        print('{0}'.format(e))
+        print(e)
     except KeyError as e:
         # error finding utxo
         print('Transaction not found\nTXID:{0}'.format(e))
@@ -100,14 +97,14 @@ def save_utxo(transaction_id, output_index, block_hash, amount):
     }}
 
     try:
-        with open('{0}/utxo.json'.format(os.path.join(os.getcwd(), r'data')), 'r+') as file:
+        with open(_PATH_UNSPENT_TNX, 'r+') as file:
             data = json.load(file)
 
             data.update(new_utxo)
             json.dump(data, file)
             file.close()
     except IOError:
-        with open('{0}/utxo.json'.format(os.path.join(os.getcwd(), r'data')), 'w') as file:
+        with open(_PATH_UNSPENT_TNX, 'w') as file:
             data = {}
 
             data.update(new_utxo)
