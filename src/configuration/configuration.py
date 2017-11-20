@@ -6,6 +6,8 @@ from Crypto.Hash import SHA256
 from src.configuration.singleton import Singleton
 from src.wallet import get_public_key
 
+# private path
+_CONFIGURATION_PATH = os.path.normpath('../data/abc.json')
 
 class Configuration(metaclass=Singleton):
     def __init__(self):
@@ -14,28 +16,28 @@ class Configuration(metaclass=Singleton):
         2) if it does load it up then begin sync ( connect, get updates, etc )
         3) if not, create new public key/wallet, files, connect to some seed peers, sync
         """
-        self.conf = self.load_conf()
+        self.conf = {}
+        self.load_conf()
 
     def load_conf(self):
         # loads the config file
         try:
-            with open('{0}/abc.json'.format(os.path.join(os.getcwd(), r'data'))) as file:
+            with open(_CONFIGURATION_PATH) as file:
                 # read in the data
-                data = json.load(file)
+                self.conf = json.load(file)
                 file.close()
                 pass
         except IOError as e:
             # file does not exist or not able to read file
-            data = self.create_conf()
-            print("not able to open conf file")
-        return data
+            self.create_conf()
+            print("Creating new configuration")
 
     def create_conf(self):
         # creates a new config
         pubkey = get_public_key("string")
         hashed_address = SHA256.new(pubkey.encode()).hexdigest()
 
-        conf = {
+        self.conf = {
             'height': 0,
             'last_block': "0000fefed401235a109a448231ab71ff708b94270be94a855bd51220a94ad940",
             'version': "00000001",
@@ -57,20 +59,11 @@ class Configuration(metaclass=Singleton):
             }
         }
         # call save_conf
-        obj = json.dumps(conf)
-        parsed = json.loads(obj)
-        try:
-            with open('{0}/abc.json'.format(os.path.join(os.getcwd(), r'data')), 'w') as file:
-                json.dump(parsed, file, indent=4, sort_keys=True)
-                file.close()
-                pass
-        except IOError as e:
-            print('error creating conf')
-        return parsed
+        self.save_conf()
 
     def save_conf(self):
         try:
-            with open('{0}/abc.json'.format(os.path.join(os.getcwd(), r'data')), 'w') as file:
+            with open(_CONFIGURATION_PATH, 'w') as file:
                 json.dump(self.conf, file, indent=4, sort_keys=True)
                 file.close()
                 pass
