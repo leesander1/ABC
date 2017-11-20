@@ -3,11 +3,20 @@ import json
 import os
 
 from Crypto.Hash import SHA256
-from src.configuration.singleton import Singleton
 from src.wallet import get_public_key
 
 # private path
 _CONFIGURATION_PATH = os.path.normpath('../data/abc.json')
+
+
+class Singleton(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
 
 class Configuration(metaclass=Singleton):
     def __init__(self):
@@ -66,9 +75,8 @@ class Configuration(metaclass=Singleton):
             with open(_CONFIGURATION_PATH, 'w') as file:
                 json.dump(self.conf, file, indent=4, sort_keys=True)
                 file.close()
-                pass
         except IOError as e:
-            print('error saving conf')
+            print('{0}'.format(e))
 
     def increment_height(self):
         # updates the height of the chain in the conf
