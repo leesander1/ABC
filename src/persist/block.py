@@ -11,10 +11,12 @@ def read_block(block_hash):
             # read in the data
             data = json.load(file)
             file.close()
-            return data
     except IOError as e:
         # file does not exist or not able to read file
-        print('{0}'.format(e))
+        print(e)
+
+    return data
+
 
 def save_block(b):
     # saves the block
@@ -23,4 +25,4 @@ def save_block(b):
             json.dump(b.info(), file, indent=4, sort_keys=True)
             file.close()
     except IOError as e:
-        print('error saving block')
+        print(e)
