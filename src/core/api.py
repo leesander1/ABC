@@ -21,7 +21,7 @@ def mine():
     tnx = bundle_tnx(size, reward_amount)
 
     b = Block(previous_hash=conf.get_conf("last_block"), transactions=tnx)
-    b.target(conf.get_conf("difficulty"))
+    b.set_target(conf.get_conf("difficulty"))
     b.mine()
     save_block(b)
     conf.increment_height()

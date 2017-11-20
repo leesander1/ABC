@@ -14,10 +14,10 @@ from src.wallet import get_private_key, get_public_key
 # define variables
 version = "00000001"  # version
 
-# define block class
+
 class Block(object):
     def __init__(self, previous_hash=None, transactions=None):
-        '''
+        """
             Constructor for Block class
               Block Header: Key info on block (80 bytes)
               Block Size: Size of the block (4 bytes)
@@ -29,7 +29,7 @@ class Block(object):
                 transactions - a list of transactions included in block
                 merkle_root - a hash of all the hashed transactions in the merkle tree
 
-        '''
+        """
 
         # define block header attributes
         self.version = version.encode('utf8')  # 4 bytes
@@ -43,7 +43,6 @@ class Block(object):
         self.transactions = transactions  # NOTE: may need to change
         self.txcount = len(transactions)  # 4 bytes
         self.size = self.block_size()  # 4 bytes
-
 
     def block_size(self):
         # calculates the size of the block and returns instance size to value
@@ -71,7 +70,7 @@ class Block(object):
         # set the version
         self.version = vers
 
-    def target(self, difficulty):
+    def set_target(self, difficulty):
         # set the target difficulty
         self.target = difficulty
 
@@ -170,7 +169,7 @@ def genesis_block():
     tnx_id = tnx.get_transaction_id()
     tnx_payload = tnx.get_data()
     b = Block(previous_hash='0000000000000000000000000000000000000000000000000000000000000000', transactions={tnx_id: tnx_payload})
-    Block.target(b, 4)
+    Block.set_target(b, 4)
     Block.genesis_timestamp(b)
     Block.mine(b)
     return b
