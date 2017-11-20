@@ -21,15 +21,12 @@ def mine():
     tnx = bundle_tnx(size, reward_amount)
 
     b = Block(previous_hash=conf.get_conf("last_block"), transactions=tnx)
-    Block.target(b, conf.get_conf("difficulty"))
-    Block.mine(b)
+    b.target(conf.get_conf("difficulty"))
+    b.mine()
     save_block(b)
     conf.increment_height()
     conf.update_previous_hash(b.block_hash())
-    # 3) if success, save block, update db, update config with updated previous_hash & height
-    # 4) notify network
-    # 5) repeat
-    return
+
 
 def create_transaction(recipient, amount):
     """
@@ -45,8 +42,9 @@ def create_transaction(recipient, amount):
         tx.unlock_inputs(get_private_key(), get_public_key("string"))
         save_verified_transaction(tx.get_transaction_id(), tx.get_data())
     except ValueError as e:
-        print(e)
+        # Will raise if insufficient utxos are found
         raise ValueError("INSUFFICIENT FUNDS")
+
 
 def get_block(block_hash):
     """
@@ -55,6 +53,7 @@ def get_block(block_hash):
     :return: block
     """
     return read_block(block_hash)
+
 
 def init_configuration():
     """
@@ -77,6 +76,7 @@ def init_configuration():
         find_incoming_utxos(b.block_hash(), b.transactions, True)
 
     return conf
+
 
 def find_incoming_utxos(block_hash, transactions, isGenesis=False):
     """
