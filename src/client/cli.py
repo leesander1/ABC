@@ -23,11 +23,9 @@ class CLI(cmd.Cmd, object):
         'Starts mining process... we might want to mine in background?'
         # note wasn't able to figure out how to stop it...
         mine()
-        return
 
     def do_stop(self, arg):
         'Pauses mining process...'
-        return
 
     def do_exit(self, arg):
         'Exits program'
@@ -36,29 +34,24 @@ class CLI(cmd.Cmd, object):
     def do_wallet(self, arg):
         'Prints address'
         print(json.dumps(self.wallet, indent=4, sort_keys=True))
-        return
 
     def do_peers(self, arg):
         'Prints peer info'
         print(json.dumps(self.peers, indent=4, sort_keys=True))
-        return
 
     def do_balance(self, arg):
         'Prints balance'
         print(json.dumps(self.wallet["amount"], indent=4, sort_keys=True))
-        return
 
     def do_info(self, arg):
         'Prints the info of the node, ie block height number of peers etc'
         print(json.dumps(self.conf.get_conf(), indent=4, sort_keys=True))
-        return
 
     def do_block_info(self, arg):
         'Prints the info of the block'
         # TODO: need to parse and check for valid input
         b = get_block(arg[:])
         print(json.dumps(b, indent=4, sort_keys=True))
-        return
 
     def do_send(self, arg):
         # TODO: add exception handling for wrong input format
@@ -67,12 +60,10 @@ class CLI(cmd.Cmd, object):
             create_transaction(args[0], int(args[1]))
         except ValueError as e:
             print(e)
-        return
 
     def do_showmewhatyougot(self, arg):
         'Show me what you got!'
         print(cromulon())
-        return
 
     def onecmd(self, line):
         """
@@ -111,11 +102,9 @@ class CLI(cmd.Cmd, object):
         self.conf = init_configuration()
         self.wallet = self.conf.get_conf("wallet")
         self.peers = self.conf.get_conf("peers")
-        return
 
     def postloop(self):
         'Do stuff on end'
         # this is where we want to save all the data on exit
         # we should also save stuff on events
         self.conf.save_conf()
-        return
