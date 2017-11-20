@@ -52,7 +52,7 @@ def get_public_key(output=None):
         file.close()
 
     # return public key as string or ECC object
-    return key.export_key(format='OpenSSH') if output == 'string' else key
+    return key.export_key(format='OpenSSH')
 
 
 def import_public_key(public_key):
