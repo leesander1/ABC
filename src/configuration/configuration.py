@@ -48,7 +48,7 @@ class Configuration(metaclass=Singleton):
 
         self.conf = {
             'height': 0,
-            'last_block': "0000fefed401235a109a448231ab71ff708b94270be94a855bd51220a94ad940",
+            'last_block': "",
             'version': "00000001",
             'difficulty': 4,
             'reward': 100,

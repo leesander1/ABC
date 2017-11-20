@@ -174,7 +174,9 @@ def genesis_block():
     Block.mine(b)
     return b
 
+
 def create_genesis_transaction(private_key, public_key):
+    # TODO: I don't think the genesis transaction needs inputs. It's the genesis, where is it getting its money from?
     """
     Create the genesis transaction.
     :param private_key:

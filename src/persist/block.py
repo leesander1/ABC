@@ -13,6 +13,7 @@ def read_block(block_hash):
             file.close()
     except IOError as e:
         # file does not exist or not able to read file
+        data = {}
         print(e)
 
     return data

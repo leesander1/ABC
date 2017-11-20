@@ -52,6 +52,9 @@ def get_block(block_hash):
     :param block_hash: the block hash
     :return: block
     """
+    if block_hash == '':
+        conf = Configuration()
+        block_hash = conf.get_conf("last_block")
     return read_block(block_hash)
 
 
@@ -73,6 +76,7 @@ def init_configuration():
             pass
         save_block(b)
         conf.increment_height()
+        conf.update_previous_hash(b.block_hash())
         find_incoming_utxos(b.block_hash(), b.transactions, True)
 
     return conf
