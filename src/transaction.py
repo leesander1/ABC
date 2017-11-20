@@ -1,7 +1,7 @@
 from Crypto.Hash import SHA256
 from Crypto.Signature import DSS
-from persist.abc_key import import_public_key
-from persist.block_chain import find_unspent_output, get_unspent_outputs
+from src.persist.abc_key import import_public_key
+from src.persist.block_chain import find_unspent_output, get_unspent_outputs
 import base64
 
 
@@ -160,7 +160,7 @@ class Transaction(object):
                 
         :return: True if the transaction is valid, false otherwise
         """
-        authentic = False
+        authentic = True
         for tnx_input in self.inputs:  # for each referenced input
             utxo = find_unspent_output(tnx_input['transaction_id'],
                                        tnx_input['output_index'])
@@ -184,10 +184,9 @@ class Transaction(object):
                 verifier = DSS.new(ecc_key, 'fips-186-3')
                 try:
                     verifier.verify(transaction_message, decoded)
-                    authentic = True
                 except ValueError:
                     authentic = False
-        # TODO: raise error if false
+                    break
         return authentic
 
     def get_transaction_id(self):
