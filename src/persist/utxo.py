@@ -99,8 +99,9 @@ def save_utxo(transaction_id, output_index, block_hash, amount):
     try:
         with open(_PATH_UNSPENT_TNX, 'r+') as file:
             data = json.load(file)
-
             data.update(new_utxo)
+
+            file.seek(0)
             json.dump(data, file)
             file.close()
     except IOError:
