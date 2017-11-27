@@ -89,6 +89,15 @@ class Configuration(metaclass=Singleton):
         self.save_conf()
         return self.conf
 
+    def add_balance(self, new_amount):
+        """
+        Updates the wallet amount, aka the balance, by adding new_amount
+        :param new_amount: amount to add
+        :return: None
+        """
+        self.conf["wallet"]["amount"] = self.conf["wallet"]["amount"] + new_amount
+        self.save_conf()
+
     def get_conf(self, key=None):
         """
         returns the value for the matching key in the configuration

@@ -89,6 +89,7 @@ def find_incoming_utxos(block_hash, transactions, isGenesis=False):
     :return:
     """
     myAddress = SHA256.new(get_public_key("string").encode()).hexdigest()
+    conf = Configuration()
     for tnx_id, tnx_info in transactions.items():
         # deserialize transaction
         tnx_payload = tnx_info
@@ -98,5 +99,7 @@ def find_incoming_utxos(block_hash, transactions, isGenesis=False):
         for index in range(len(tnx.outputs)):
             if tnx.outputs[index]["address"] == myAddress and not isGenesis:
                 save_utxo(tnx.get_transaction_id(), index, block_hash, tnx.outputs[index]["amount"])
+                conf.add_balance(tnx.outputs[index]["amount"])
             elif tnx.outputs[index]["address"] == myAddress and isGenesis:
                 save_utxo(tnx.get_transaction_id(), -1, block_hash, tnx.outputs[index]["amount"])
+                conf.add_balance(tnx.outputs[index]["amount"])
