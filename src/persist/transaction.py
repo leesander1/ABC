@@ -13,6 +13,8 @@ def save_verified_transaction(tnx_id, tnx_data):
         with open('{0}/verified_transactions.json'.format(os.path.join(os.getcwd(), r'data')), 'r+') as file:
             data = json.load(file)
             data.update(verified_tnx)
+
+            file.seek(0)
             json.dump(data, file)
             file.close()
     except IOError as e:
@@ -35,6 +37,8 @@ def save_unverified_transaction(tnx_id, tnx_data):
         with open('{0}/unverified_transactions.json'.format(os.path.join(os.getcwd(), r'data')), 'r+') as file:
             data = json.load(file)
             data.update([unverified_tnx])
+
+            file.seek(0)
             json.dump(data, file)
             file.close()
     except IOError as e:
