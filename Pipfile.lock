@@ -1,19 +1,19 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "b4f6e5d772744a97f81b9d8f9570bc069225a844e8fa961d5e156508f7ea41df"
+            "sha256": "04629642b8cd689ef2436c467d19507850137cb80fe335c90d642c51df8255ca"
         },
         "host-environment-markers": {
             "implementation_name": "cpython",
-            "implementation_version": "3.5.2",
+            "implementation_version": "3.6.2",
             "os_name": "posix",
             "platform_machine": "x86_64",
             "platform_python_implementation": "CPython",
             "platform_release": "4.4.0-43-Microsoft",
             "platform_system": "Linux",
             "platform_version": "#1-Microsoft Wed Dec 31 14:42:53 PST 2014",
-            "python_full_version": "3.5.2",
-            "python_version": "3.5",
+            "python_full_version": "3.6.2",
+            "python_version": "3.6",
             "sys_platform": "linux"
         },
         "pipfile-spec": 6,
@@ -88,6 +88,22 @@
                 "sha256:587d93681ae44936ae086b4b45486eb302e3853ba5af149aac3be9e9713998e9"
             ],
             "version": "==0.9"
+        },
+        "pycryptodome": {
+            "hashes": [
+                "sha256:2174fa555916b5ae8bcc7747ecfe2a4d5943b42c9dcf4878e269baaae264e85d",
+                "sha256:9fc97cd0f6eeec59af736b3df81e5811d836fa646b89a4325672dcaf997250b3",
+                "sha256:8440a35ccd52f0eab0f4ece284bd13a587d86d79bd404d8914f81eda74a66de1",
+                "sha256:6f64d8b63034fd9289bae4cb48aa8f7049f6b8db702c7af50cb3718821d28147",
+                "sha256:f0196124f83221f9c5e06a68e247019466395d35d92d4ce4482c835f75302851",
+                "sha256:8851b1e1d85e4fb981048c8a8a8431839103f43ea3c35f1b46bae2e41699f439",
+                "sha256:a9e3e3e9ab0241b0303206656a74d5cd6bd00fcad6f9ffd0ba6b8e35072f74d7",
+                "sha256:15ced95a00b55bb2fc22f3dddde1c8d6f270089f35c3af0e07306bc2ba1e1c4e",
+                "sha256:f7befe2249df41e012a3d8079ab3c7089be21969591eb77b21767fa24557a7b7",
+                "sha256:ec560e62258358afd7a1a3d34c8860fdf478e28c0999173f2d5c618fd2fd60d3",
+                "sha256:18d8dfe31bf0cb53d58694903e526be68f3cf48e6e3c6dfbbc1e7042b1693af7"
+            ],
+            "version": "==3.4.7"
         },
         "requests": {
             "hashes": [

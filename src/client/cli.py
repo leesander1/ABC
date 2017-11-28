@@ -1,10 +1,12 @@
 ''' The cmd line interface '''
 import cmd
 import json
+import _thread
 
 from src.client.helpers import cromulon
 # TODO: this module should not explicitly import persist or config. Need api fot this
 from src.core import mine, create_transaction, get_block, init_configuration
+from src.network.network import start_server, seed_peers
 
 
 class CLI(cmd.Cmd, object):
@@ -54,6 +56,7 @@ class CLI(cmd.Cmd, object):
         print(json.dumps(b, indent=4, sort_keys=True))
 
     def do_send(self, arg):
+        'Send an amount'
         # TODO: add exception handling for wrong input format
         try:
             args = arg.split()
@@ -102,6 +105,10 @@ class CLI(cmd.Cmd, object):
         self.conf = init_configuration()
         self.wallet = self.conf.get_conf("wallet")
         self.peers = self.conf.get_conf("peers")
+
+        _thread.start_new_thread(start_server, ())  # start flask server on new thread
+        # seed_peers()
+
 
     def postloop(self):
         'Do stuff on end'
