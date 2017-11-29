@@ -236,6 +236,16 @@ class Transaction(object):
         }
         return transaction
 
+    def sum_of_outputs(self):
+        """
+        Calculates the sum of all outputs
+        :return: Double
+       """
+        total = 0
+
+        for output in self.outputs:
+            total = total + output["amount"]
+        return total
 
 def create_coinbase_tx(reward_amount):
     """
