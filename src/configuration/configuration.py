@@ -98,6 +98,15 @@ class Configuration(metaclass=Singleton):
         self.conf["wallet"]["amount"] = self.conf["wallet"]["amount"] + new_amount
         self.save_conf()
 
+    def subtract_balance(self, amount):
+        """
+        Subtracts an amount from the balance
+        :param amount: amount to subtract
+        :return: None
+        """
+        self.conf["wallet"]["amount"] = self.conf["wallet"]["amount"] - amount
+        self.save_conf()
+
     def get_conf(self, key=None):
         """
         returns the value for the matching key in the configuration
