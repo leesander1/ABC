@@ -106,7 +106,7 @@ class CLI(cmd.Cmd, object):
         self.wallet = self.conf.get_conf("wallet")
         self.peers = self.conf.get_conf("peers")
 
-        _thread.start_new_thread(start_server, ())  # start flask server on new thread
+        # _thread.start_new_thread(start_server, ())  # start flask server on new thread
         # seed_peers()
 
 

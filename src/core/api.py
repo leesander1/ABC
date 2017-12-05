@@ -27,6 +27,13 @@ def mine():
     conf.increment_height()
     conf.update_previous_hash(b.block_hash())
 
+def verify_block(b):
+    # need to check txns
+    conf = Configuration()
+    bh = Block(payload=json.loads(b))
+    save_block(bh)
+    conf.increment_height()
+    conf.update_previous_hash(bh.block_hash())
 
 def create_transaction(recipient, amount):
     """

@@ -16,7 +16,7 @@ version = "00000001"  # version
 
 
 class Block(object):
-    def __init__(self, previous_hash=None, transactions=None):
+    def __init__(self, previous_hash=None, transactions=None, **kwargs):
         """
             Constructor for Block class
               Block Header: Key info on block (80 bytes)
@@ -30,19 +30,33 @@ class Block(object):
                 merkle_root - a hash of all the hashed transactions in the merkle tree
 
         """
+        self.payload = kwargs.pop('payload', None)
+        if self.payload:
+            # define block header attributes
+            self.version = self.payload['header']['version'].encode('utf8')  # 4 bytes
+            self.previous_hash = self.payload['header']['parent'].encode('utf8')  # 32 bytes
+            self.merkle_root = self.payload['header']['merkle_root']  # 32 bytes
+            self.timestamp = self.payload['header']['timestamp'].encode('utf8')  # 4 bytes
+            self.nonce = self.payload['header']['nonce']
+            self.target = self.payload['header']['target']
 
-        # define block header attributes
-        self.version = version.encode('utf8')  # 4 bytes
-        self.previous_hash = previous_hash.encode('utf8')  # 32 bytes
-        self.merkle_root = self.merkle_root(transactions)  # 32 bytes
-        self.timestamp = self.block_timestamp()  # 4 bytes
-        self.nonce = None  # 4 bytes
-        self.target = None  # 4 bytes
+            # define rest of block
+            self.transactions = self.payload['transactions'] # NOTE: may need to change
+            self.txcount = self.payload['txcount']  # 4 bytes
+            self.size = self.payload['size']
+        else:
+            # define block header attributes
+            self.version = version.encode('utf8')  # 4 bytes
+            self.previous_hash = previous_hash.encode('utf8')  # 32 bytes
+            self.merkle_root = self.merkle_root(transactions)  # 32 bytes
+            self.timestamp = self.block_timestamp()  # 4 bytes
+            self.nonce = None  # 4 bytes
+            self.target = None  # 4 bytes
 
-        # define rest of block
-        self.transactions = transactions  # NOTE: may need to change
-        self.txcount = len(transactions)  # 4 bytes
-        self.size = self.block_size()  # 4 bytes
+            # define rest of block
+            self.transactions = transactions  # NOTE: may need to change
+            self.txcount = len(transactions)  # 4 bytes
+            self.size = self.block_size()  # 4 bytes
 
     def block_size(self):
         # calculates the size of the block and returns instance size to value

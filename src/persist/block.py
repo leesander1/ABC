@@ -1,7 +1,7 @@
 """ Getting and Putting blocks into json files """
 import json
 import os
-from src.persist.utxo import save_utxo
+from src.configuration import Configuration
 
 
 def read_block(block_hash):
@@ -15,8 +15,19 @@ def read_block(block_hash):
         # file does not exist or not able to read file
         data = {}
         print(e)
-
     return data
+
+def find_block(parent_hash=None, block_hash=None):
+    # find the next block based on hash..
+    if not block_hash:
+        conf = Configuration()
+        block_hash = conf.get_conf("last_block")
+
+    b = read_block(block_hash)
+    if b["header"]["parent"] == parent_hash:
+        return b
+    else:
+        find_block(parent_hash, b["header"]["parent"])
 
 
 def save_block(b):
@@ -27,3 +38,4 @@ def save_block(b):
             file.close()
     except IOError as e:
         print(e)
+
