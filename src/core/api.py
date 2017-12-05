@@ -8,7 +8,7 @@ from src.block.block import Block, genesis_block, bundle_tnx
 from src.configuration import Configuration
 from src.transaction import Transaction
 from src.wallet import get_public_key, get_private_key
-
+from src.network import network
 
 def mine():
     # config object
@@ -26,6 +26,7 @@ def mine():
     save_block(b)
     conf.increment_height()
     conf.update_previous_hash(b.block_hash())
+    # TODO: create new transmit with mined block
 
 def verify_block(b):
     # need to check txns

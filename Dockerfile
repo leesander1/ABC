@@ -7,7 +7,10 @@ ENV BUILD_LIST git
 
 RUN apk add --update $BUILD_LIST \
     && git clone https://github.com/leesander1/ABC.git /abc \
+    && git checkout -b docker origin/networking \
     && apk --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --update add leveldb leveldb-dev \
+    && apk add --no-cache gcc \
+    && apk add musl-dev \
     && pip install pipenv \
     && pipenv --python=python3.6 \
     && pipenv install \
