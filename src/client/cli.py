@@ -5,6 +5,7 @@ import json
 from src.client.helpers import cromulon
 # TODO: this module should not explicitly import persist or config. Need api fot this
 from src.core import mine, create_transaction, get_block, init_configuration
+from src.network.network import start_server, seed_peers
 
 
 class CLI(cmd.Cmd, object):

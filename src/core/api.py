@@ -8,6 +8,7 @@ from src.block.block import Block, genesis_block, bundle_tnx
 from src.configuration import Configuration
 from src.transaction import Transaction
 from src.wallet import get_public_key, get_private_key
+from src.network import network
 
 
 def mine():
@@ -28,6 +29,16 @@ def mine():
     conf.update_previous_hash(b.block_hash())
 
     find_incoming_utxos(b.block_hash(), b.transactions)
+    network.transmit(b, "block")
+
+
+def verify_block(b):
+    # need to check txns
+    conf = Configuration()
+    bh = Block(payload=json.loads(b))
+    save_block(bh)
+    conf.increment_height()
+    conf.update_previous_hash(bh.block_hash())
 
 
 def create_transaction(recipient, amount):
@@ -45,6 +56,7 @@ def create_transaction(recipient, amount):
         tx.unlock_inputs(get_private_key(), get_public_key("string"))
         save_verified_transaction(tx.get_transaction_id(), tx.get_data())
         conf.subtract_balance(tx.sum_of_outputs())
+        network.transmit(tx.get_data(), "txn")
     except ValueError as e:
         # Will raise if insufficient utxos are found
         raise ValueError("INSUFFICIENT FUNDS")

@@ -56,14 +56,16 @@ class Configuration(metaclass=Singleton):
                 'address': hashed_address,
                 'amount': 0
             },
+            'ip': "0.0.0.0",
+            'port': "5000",
             'peers': {
                 '1': {
-                    'ip': "127.0.0.1",
-                    'port': 3390
+                    'ip': "0.0.0.0",
+                    'port': 5001
                 },
                 '2': {
-                    'ip': "localhost",
-                    'port': 3390
+                    'ip': "0.0.0.0",
+                    'port': 5002
                 }
             }
         }
