@@ -59,7 +59,7 @@ class Transaction(object):
 
         self.payload = kwargs.pop('payload', None)
         if self.payload:  # un-packing transaction from network or file
-            self.transaction_id = self.payload['transaction_id']
+            self.transaction_id = ""
             self.input_count = self.payload['input_count']
             self.inputs = self.payload['inputs']
             self.output_count = self.payload['output_count']

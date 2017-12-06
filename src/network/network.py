@@ -96,17 +96,16 @@ def verify_incoming_tnx(data):
     :param data: serialized transaction
     :return: None
     """
-    tnx_tuple = data.items()
+    # tnx_tuple = data.items()
+    #
+    # tnx_payload = tnx_tuple[1]
+    # tnx_payload["transaction_id"] = tnx_tuple[0]
 
-    tnx_payload = tnx_tuple[1]
-    tnx_payload["transaction_id"] = tnx_tuple[0]
-
-    tnx = Transaction(payload=tnx_payload)
-
-    if tnx.verify():
-        save_verified_transaction(tnx.get_transaction_id(), tnx.get_data())
-    else:
-        save_unverified_transaction(tnx.get_transaction_id(), tnx.get_data())
+    tnx = Transaction(payload=json.loads(data))
+    # if tnx.verify():
+    save_verified_transaction(tnx.get_transaction_id(), tnx.get_data())
+    # else:
+    #     save_unverified_transaction(tnx.get_transaction_id(), tnx.get_data())
 
 @app.route('/', methods=['GET'])
 def test():
