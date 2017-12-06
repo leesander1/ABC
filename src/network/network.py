@@ -13,8 +13,9 @@ from flask import request
 import requests
 import logging, json, os
 from src.configuration import Configuration
-from src.persist import block
+from src.persist import block, save_verified_transaction, save_unverified_transaction
 from src.core import api as core
+from src.transaction import Transaction
 
 app = Flask(__name__)
 # app.logger.disabled = True
@@ -89,6 +90,24 @@ def sync():
             nb = req_get(p["ip"], "block", p["port"], conf.get_conf("last_block"))
             core.verify_block(nb)
 
+
+def verify_incoming_tnx(data):
+    """
+    Deserializes transaction and verifies it. If so, add it to verified transaction
+    :param data: serialized transaction
+    :return: None
+    """
+    tnx_tuple = data.items()
+
+    tnx_payload = tnx_tuple[1]
+    tnx_payload["transaction_id"] = tnx_tuple[0]
+
+    tnx = Transaction(payload=tnx_payload)
+
+    if tnx.verify():
+        save_verified_transaction(tnx.get_transaction_id(), tnx.get_data())
+    else:
+        save_unverified_transaction(tnx.get_transaction_id(), tnx.get_data())
 
 @app.route('/', methods=['GET'])
 def test():
