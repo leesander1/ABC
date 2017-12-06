@@ -10,6 +10,7 @@ from src.transaction import Transaction
 from src.wallet import get_public_key, get_private_key
 from src.network import network
 
+
 def mine():
     # config object
     conf = Configuration()
@@ -26,16 +27,9 @@ def mine():
     save_block(b)
     conf.increment_height()
     conf.update_previous_hash(b.block_hash())
-    # TODO: create new transmit with mined block
-    network.transmit(b, "block")
-    
-def verify_block(b):
-    # need to check txns
-    conf = Configuration()
-    bh = Block(payload=json.loads(b))
-    save_block(bh)
-    conf.increment_height()
-    conf.update_previous_hash(bh.block_hash())
+
+    find_incoming_utxos(b.block_hash(), b.transactions)
+    network.transmit(b.info(), "block")
 
 def create_transaction(recipient, amount):
     """
@@ -45,11 +39,13 @@ def create_transaction(recipient, amount):
     :return: None
     """
     # TODO: Send a success message to client
+    conf = Configuration()
     try:
         tx = Transaction()
         tx.add_output(recipient, amount)
         tx.unlock_inputs(get_private_key(), get_public_key("string"))
         save_verified_transaction(tx.get_transaction_id(), tx.get_data())
+        conf.subtract_balance(tx.sum_of_outputs())
         network.transmit(tx.get_data(), "txn")
     except ValueError as e:
         # Will raise if insufficient utxos are found
@@ -99,6 +95,7 @@ def find_incoming_utxos(block_hash, transactions, isGenesis=False):
     :return:
     """
     myAddress = SHA256.new(get_public_key("string").encode()).hexdigest()
+    conf = Configuration()
     for tnx_id, tnx_info in transactions.items():
         # deserialize transaction
         tnx_payload = tnx_info
@@ -108,5 +105,7 @@ def find_incoming_utxos(block_hash, transactions, isGenesis=False):
         for index in range(len(tnx.outputs)):
             if tnx.outputs[index]["address"] == myAddress and not isGenesis:
                 save_utxo(tnx.get_transaction_id(), index, block_hash, tnx.outputs[index]["amount"])
+                conf.add_balance(tnx.outputs[index]["amount"])
             elif tnx.outputs[index]["address"] == myAddress and isGenesis:
                 save_utxo(tnx.get_transaction_id(), -1, block_hash, tnx.outputs[index]["amount"])
+                conf.add_balance(tnx.outputs[index]["amount"])
