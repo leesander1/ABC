@@ -7,3 +7,15 @@ The core functions we will discuss, explore and develop are the following:
 3. Communication with other nodes
 4. Proof of work algorithms
 5. Transactions
+
+
+### Docker
+
+```bash
+$ docker build -t abc .
+```
+```bash
+$ docker run -it --rm -p 80:5000 abc
+$ docker run -it --rm -p 80:5001 abc
+$ docker run -it --rm -p 80:5002 abc
+```
