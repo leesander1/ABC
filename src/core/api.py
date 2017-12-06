@@ -27,7 +27,8 @@ def mine():
     conf.increment_height()
     conf.update_previous_hash(b.block_hash())
     # TODO: create new transmit with mined block
-
+    network.transmit(b, "block")
+    
 def verify_block(b):
     # need to check txns
     conf = Configuration()
@@ -49,6 +50,7 @@ def create_transaction(recipient, amount):
         tx.add_output(recipient, amount)
         tx.unlock_inputs(get_private_key(), get_public_key("string"))
         save_verified_transaction(tx.get_transaction_id(), tx.get_data())
+        network.transmit(tx.get_data(), "txn")
     except ValueError as e:
         # Will raise if insufficient utxos are found
         raise ValueError("INSUFFICIENT FUNDS")
