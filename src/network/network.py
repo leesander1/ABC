@@ -54,8 +54,7 @@ def req_post(host, endpoint, port, data):
     payload = json.dumps(data)
     headers = {'content-type': 'application/json', 'dataType': 'json'}
     r = requests.post(url, data=payload, headers=headers)
-    # print(r.json())
-    return r.json()
+    return ""
 
 def req_get(host, endpoint, port, data=None):
     '''
@@ -124,7 +123,7 @@ def test():
 def h_block():
     # handle getting new block
     nb = request.get_json(silent=True)
-    core.verify_block(nb)
+    core.verify_block(json.dumps(nb))
     return json.dumps(nb)
 
 @app.route('/block', methods=['GET'])
@@ -151,7 +150,10 @@ def r_height():
 # # add to verified or unverified txns list
 def h_txn():
     # handle the txn
-    return "receive txn"
+    ntxn = request.get_json(silent=True)
+    verify_incoming_tnx(ntxn)
+    return json.dumps(ntxn)
+
 
 @app.route('/txn', methods=['GET'])
 # # request for updated list of txns

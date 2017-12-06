@@ -62,10 +62,6 @@ class Configuration(metaclass=Singleton):
                 '1': {
                     'ip': "0.0.0.0",
                     'port': 5001
-                },
-                '2': {
-                    'ip': "0.0.0.0",
-                    'port': 5002
                 }
             }
         }
