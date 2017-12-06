@@ -26,7 +26,7 @@ def start_server():
     Starts the server and prevents default start
     :return:
     '''
-    app.run(host='0.0.0.0', port='50050', use_reloader=False, debug=False)
+    app.run(host='0.0.0.0', port='5000', use_reloader=False, debug=False)
 
 
 def seed_peers():

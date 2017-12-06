@@ -17,6 +17,6 @@ RUN apk add --update $BUILD_LIST \
     && apk del $BUILD_LIST \
     && rm -rf /var/cache/apk/*
 
-EXPOSE 50050
+EXPOSE 5000
 
 ENTRYPOINT [ "pipenv", "run", "python", "/abc/main.py" ]
